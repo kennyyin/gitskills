@@ -110,6 +110,12 @@
   .mini-btn.del  { background: #3f1d1d; color: var(--danger); }
   .empty { text-align: center; color: var(--muted); padding: 40px 16px; }
 
+  /* 进度图 */
+  #chart { width: 100%; overflow-x: auto; }
+  #chart svg { display: block; width: 100%; height: auto; }
+  .chart-legend { display: flex; gap: 18px; justify-content: center; margin-top: 12px; font-size: 13px; color: var(--muted); }
+  .chart-legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: middle; }
+
   .footer { text-align: center; color: var(--muted); font-size: 12px; padding: 24px 12px; }
   .footer code { color: var(--accent); }
   .warn { background: #422006; color: #fbbf24; border: 1px solid #854d0e;
@@ -134,6 +140,7 @@
       <button class="mode-btn active" data-mode="practice">📚 练习</button>
       <button class="mode-btn" data-mode="dialogue">💬 对话</button>
       <button class="mode-btn" data-mode="review">📒 错题本</button>
+      <button class="mode-btn" data-mode="progress">📊 进度</button>
     </div>
 
     <div id="browserWarn" class="warn">
@@ -180,6 +187,19 @@
     <!-- ===== 错题本 ===== -->
     <section id="reviewView" class="hidden">
       <div id="mistakeList"></div>
+    </section>
+
+    <!-- ===== 进度 ===== -->
+    <section id="progressView" class="hidden">
+      <div class="card">
+        <div class="progress">最近 14 天练习曲线</div>
+        <div id="chart"></div>
+        <div class="chart-legend">
+          <span><i style="background:var(--accent)"></i>每日练习句数（柱）</span>
+          <span><i style="background:var(--gold)"></i>平均得分（折线 0–100）</span>
+        </div>
+        <div id="chartSummary" class="tip"></div>
+      </div>
     </section>
 
     <div class="footer">
@@ -288,6 +308,43 @@ const DIALOGUES = {
   },
 };
 
+/* ================= IPA 音标词典（通用美音, 离线） ================= */
+const IPA = {
+  "a":"ə","aboard":"əˈbɔrd","about":"əˈbaʊt","agree":"əˈɡri","alex":"ˈælɪks","amazing":"əˈmeɪzɪŋ",
+  "and":"ænd","any":"ˈɛni","anything":"ˈɛniˌθɪŋ","appreciate":"əˈpriʃiˌeɪt","around":"əˈraʊnd","as":"æz",
+  "at":"æt","back":"bæk","bank":"bæŋk","be":"bi","been":"bɪn","breakfast":"ˈbrɛkfəst","by":"baɪ",
+  "call":"kɔl","can":"kæn","card":"kɑrd","cards":"kɑrdz","care":"kɛr","check":"tʃɛk","checkout":"ˈtʃɛkaʊt",
+  "chicken":"ˈtʃɪkɪn","chocolate":"ˈtʃɔklət","corner":"ˈkɔrnər","cost":"kɔst","could":"kʊd","credit":"ˈkrɛdɪt",
+  "day":"deɪ","delicious":"dɪˈlɪʃəs","did":"dɪd","dish":"dɪʃ","distance":"ˈdɪstəns","do":"du","does":"dʌz",
+  "dollars":"ˈdɑlərz","eat":"it","enjoy":"ɪnˈdʒɔɪ","everyone":"ˈɛvriˌwʌn","everything":"ˈɛvriˌθɪŋ",
+  "excuse":"ɪkˈskjuz","far":"fɑr","file":"faɪl","first":"fɜrst","five":"faɪv","flight":"flaɪt","for":"fɔr",
+  "friendly":"ˈfrɛndli","from":"frʌm","fun":"fʌn","game":"ɡeɪm","get":"ɡɛt","glad":"ɡlæd","glass":"ɡlæs",
+  "go":"ɡoʊ","going":"ˈɡoʊɪŋ","good":"ɡʊd","great":"ɡreɪt","hanging":"ˈhæŋɪŋ","have":"hæv","hear":"hɪr",
+  "help":"hɛlp","here":"hɪr","here's":"hɪrz","hi":"haɪ","home":"hoʊm","how":"haʊ","how's":"haʊz","i":"aɪ",
+  "i'd":"aɪd","i'll":"aɪl","i'm":"aɪm","if":"ɪf","in":"ɪn","included":"ɪnˈkludɪd","intern":"ˈɪntɜrn","is":"ɪz",
+  "it":"ɪt","it's":"ɪts","job":"dʒɑb","just":"dʒʌst","know":"noʊ","larger":"ˈlɑrdʒər","last":"læst",
+  "lately":"ˈleɪtli","latte":"ˈlɑteɪ","left":"lɛft","let":"lɛt","let's":"lɛts","like":"laɪk","long":"lɔŋ",
+  "looking":"ˈlʊkɪŋ","me":"mi","medium":"ˈmidiəm","meet":"mit","meeting":"ˈmitɪŋ","menu":"ˈmɛnju",
+  "minute":"ˈmɪnɪt","more":"mɔr","much":"mʌtʃ","muffin":"ˈmʌfɪn","museum":"mjuˈziəm","must":"mʌst","my":"maɪ",
+  "nearby":"ˈnɪrˌbaɪ","nearest":"ˈnɪrəst","need":"nid","new":"nu","next":"nɛkst","nice":"naɪs","night":"naɪt",
+  "no":"noʊ","of":"ʌv","on":"ɑn","or":"ɔr","out":"aʊt","over":"ˈoʊvər","place":"pleɪs","please":"pliz",
+  "possible":"ˈpɑsəbəl","presentation":"ˌprɛzənˈteɪʃən","questions":"ˈkwɛstʃənz","really":"ˈrɪli",
+  "receipt":"rɪˈsit","recommend":"ˌrɛkəˈmɛnd","right":"raɪt","sam":"sæm","schedule":"ˈskɛdʒul","see":"si",
+  "send":"sɛnd","six":"sɪks","size":"saɪz","so":"soʊ","soon":"sun","sounds":"saʊndz","spicy":"ˈspaɪsi",
+  "station":"ˈsteɪʃən","straight":"streɪt","subway":"ˈsʌbˌweɪ","sure":"ʃʊr","take":"teɪk","taxi":"ˈtæksi",
+  "tell":"tɛl","thank":"θæŋk","thanks":"θæŋks","that":"ðæt","that'll":"ˈðætəl","the":"ðə","there":"ðɛr",
+  "this":"ðɪs","time":"taɪm","to":"tu","today":"təˈdeɪ","together":"təˈɡɛðər","tomorrow":"təˈmɑroʊ",
+  "totally":"ˈtoʊtəli","try":"traɪ","turn":"tɜrn","up":"ʌp","visit":"ˈvɪzɪt","walk":"wɔk","walking":"ˈwɔkɪŋ",
+  "was":"wʌz","watch":"wɑtʃ","water":"ˈwɔtər","way":"weɪ","we":"wi","weather":"ˈwɛðər","weekend":"ˈwikɛnd",
+  "welcome":"ˈwɛlkəm","what":"wʌt","which":"wɪtʃ","with":"wɪð","within":"wɪˈðɪn","would":"wʊd","yes":"jɛs",
+  "you":"ju","you're":"jʊr","your":"jɔr"
+};
+function ipaFor(sentence) {
+  const tokens = sentence.toLowerCase().match(/[a-z']+/g) || [];
+  const out = tokens.map(w => IPA[w] || IPA[w.replace(/'s$/, "")] || "·");
+  return out.length ? "/ " + out.join(" ") + " /" : "";
+}
+
 /* ================= 本地存储 ================= */
 const LS = {
   get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
@@ -298,7 +355,11 @@ const todayStr = () => new Date().toISOString().slice(0, 10);
 function loadStreak() { return LS.get("esc_streak", { lastDate: "", count: 0, todayCount: 0 }); }
 function saveStreak(s) { LS.set("esc_streak", s); }
 
-function recordPractice() {
+function loadHistory() { return LS.get("esc_history", {}); }
+function saveHistory(h) { LS.set("esc_history", h); }
+
+/* 记录一次练习：更新打卡 + 当日练习数 + 历史得分 */
+function logAttempt(score) {
   const s = loadStreak();
   const today = todayStr();
   if (s.lastDate !== today) {
@@ -309,6 +370,14 @@ function recordPractice() {
   }
   s.todayCount = (s.todayCount || 0) + 1;
   saveStreak(s);
+
+  if (typeof score === "number" && !isNaN(score)) {
+    const h = loadHistory();
+    const d = h[today] || { count: 0, sum: 0 };
+    d.count += 1; d.sum += score;
+    h[today] = d;
+    saveHistory(h);
+  }
   renderStats();
 }
 
@@ -408,6 +477,7 @@ function renderCard() {
   const list = sentences(), item = list[index];
   $("progress").textContent = `${currentScene} · 第 ${index + 1} / ${list.length} 句`;
   $("zh").textContent = item.zh; $("en").textContent = item.en;
+  $("phon").textContent = ipaFor(item.en);
   $("result").innerHTML = "";
   $("prevBtn").disabled = index === 0;
   $("nextBtn").disabled = index === list.length - 1;
@@ -425,7 +495,7 @@ function renderPracticeResult(target, heard, err) {
     <div class="diff">${diffHtml(marks)}</div>
     <div class="tip">${feedbackFor(score)}</div>`;
   requestAnimationFrame(() => { $("result").querySelector(".score-fill").style.width = score + "%"; });
-  recordPractice();
+  logAttempt(score);
   if (score < MISTAKE_THRESHOLD) addMistake(sentences()[index], score);
 }
 
@@ -479,7 +549,7 @@ function renderTurns() {
       <div class="avatar">${mine ? "🧑" : "🤖"}</div>
       <div class="bubble">
         <p class="en">${shown ? t.en : (mine ? "🎤 轮到你说这句…" : "…")}</p>
-        ${shown ? `<p class="zh">${t.zh}</p>` : (mine ? `<p class="zh">${t.zh}</p>` : "")}
+        ${shown ? `<p class="zh">${t.zh}</p><p class="mini">${ipaFor(t.en)}</p>` : (mine ? `<p class="zh">${t.zh}</p>` : "")}
       </div>`;
     box.appendChild(row);
   });
@@ -515,7 +585,7 @@ function renderDlgResult(target, heard, err) {
     </div>
     <div class="diff">${diffHtml(marks)}</div>
     <div class="tip">${feedbackFor(score)} ${score >= 50 ? "继续下一句 →" : "可重说一次。"}</div>`;
-  recordPractice();
+  logAttempt(score);
   if (score < MISTAKE_THRESHOLD) addMistake({ en: target, zh: dlg().turns[turnPos].zh }, score);
   if (score >= 50) { turnPos++; setTimeout(advanceDialogue, 700); }
 }
@@ -538,6 +608,7 @@ function renderMistakes() {
         <span class="badge" style="background:${colorFor(m.score)}">${m.score}</span>
       </div>
       <p class="zh">${m.zh}</p>
+      <p class="mini" style="color:var(--accent);font-size:13px;margin:4px 0 0">${ipaFor(m.en)}</p>
       <div class="row-actions">
         <button class="mini-btn play">🔊 朗读</button>
         <button class="mini-btn rec">🎤 重练</button>
@@ -554,12 +625,66 @@ function renderMistakes() {
       const { score, marks } = scoreSpeech(m.en, h);
       resBox.innerHTML = `<div class="diff" style="margin-top:10px">${diffHtml(marks)}</div>
         <div class="tip"><b style="color:${colorFor(score)}">${score} 分</b> · ${feedbackFor(score)}</div>`;
-      recordPractice();
+      logAttempt(score);
       if (score >= MISTAKE_THRESHOLD) { removeMistake(m.en); }
       else { addMistake({ en: m.en, zh: m.zh }, score); }
     }, recBtn);
     box.appendChild(el);
   });
+}
+
+/* ================= 进度图（SVG，最近 14 天） ================= */
+function renderChart() {
+  const h = loadHistory();
+  const days = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    const rec = h[d] || { count: 0, sum: 0 };
+    days.push({ date: d, count: rec.count, avg: rec.count ? Math.round(rec.sum / rec.count) : null });
+  }
+  const W = 700, H = 240, padL = 36, padR = 36, padT = 16, padB = 30;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const maxCount = Math.max(1, ...days.map(d => d.count));
+  const bw = plotW / days.length;
+  const x = (i) => padL + i * bw + bw / 2;
+  const yCount = (c) => padT + plotH - (c / maxCount) * plotH;
+  const yScore = (s) => padT + plotH - (s / 100) * plotH;
+
+  let bars = "", labels = "", dots = "", linePts = [];
+  days.forEach((d, i) => {
+    const cx = x(i);
+    if (d.count > 0) {
+      const bh = plotH - (yCount(d.count) - padT);
+      bars += `<rect x="${cx - bw * 0.3}" y="${yCount(d.count)}" width="${bw * 0.6}" height="${bh}" rx="3" fill="#38bdf8" opacity="0.85"><title>${d.date}: ${d.count} 句</title></rect>`;
+    }
+    if (d.avg !== null) {
+      linePts.push([cx, yScore(d.avg)]);
+      dots += `<circle cx="${cx}" cy="${yScore(d.avg)}" r="3.5" fill="#facc15"><title>${d.date}: 平均 ${d.avg} 分</title></circle>`;
+    }
+    if (i % 2 === 0) labels += `<text x="${cx}" y="${H - 8}" text-anchor="middle" font-size="10" fill="#94a3b8">${d.date.slice(5)}</text>`;
+  });
+  // 平均分折线（仅连接有数据的相邻点）
+  let path = "";
+  for (let k = 1; k < linePts.length; k++) {
+    path += `<line x1="${linePts[k-1][0]}" y1="${linePts[k-1][1]}" x2="${linePts[k][0]}" y2="${linePts[k][1]}" stroke="#facc15" stroke-width="2"/>`;
+  }
+  // 网格线 (0/50/100 分参考)
+  let grid = "";
+  [0, 50, 100].forEach(s => {
+    const yy = yScore(s);
+    grid += `<line x1="${padL}" y1="${yy}" x2="${W - padR}" y2="${yy}" stroke="#334155" stroke-dasharray="3 4"/>`;
+    grid += `<text x="${W - padR + 4}" y="${yy + 3}" font-size="9" fill="#64748b">${s}</text>`;
+  });
+
+  $("chart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="练习历史图">
+    ${grid}${bars}${path}${dots}${labels}</svg>`;
+
+  const active = days.filter(d => d.count > 0);
+  const total = active.reduce((a, d) => a + d.count, 0);
+  const overallAvg = total ? Math.round(active.reduce((a, d) => a + d.avg * d.count, 0) / total) : 0;
+  $("chartSummary").innerHTML = active.length
+    ? `近 14 天共练习 <b style="color:var(--accent)">${total}</b> 句，活跃 <b style="color:var(--accent)">${active.length}</b> 天，平均得分 <b style="color:${colorFor(overallAvg)}">${overallAvg}</b> 分。`
+    : "还没有练习记录，去「练习」或「对话」模式开口说几句吧！";
 }
 
 /* ================= 模式切换 ================= */
@@ -568,10 +693,12 @@ function setMode(mode) {
   $("practiceView").classList.toggle("hidden", mode !== "practice");
   $("dialogueView").classList.toggle("hidden", mode !== "dialogue");
   $("reviewView").classList.toggle("hidden", mode !== "review");
+  $("progressView").classList.toggle("hidden", mode !== "progress");
   if (synth) synth.cancel();
   if (recognizing && recognition) recognition.stop();
   if (mode === "dialogue") { $("dlgRecBtn").disabled = false; $("dlgPlayBtn").disabled = false; restartDialogue(); }
   if (mode === "review") renderMistakes();
+  if (mode === "progress") renderChart();
 }
 document.querySelectorAll(".mode-btn").forEach(b => b.onclick = () => setMode(b.dataset.mode));
 
@@ -585,10 +712,11 @@ document.addEventListener("keydown", (e) => {
 
 $("clearAll").onclick = (e) => {
   e.preventDefault();
-  if (confirm("确定要清空打卡记录和错题本吗？此操作不可恢复。")) {
+  if (confirm("确定要清空打卡记录、错题本和练习历史吗？此操作不可恢复。")) {
     localStorage.removeItem("esc_streak");
     localStorage.removeItem("esc_mistakes");
-    renderStats(); renderMistakes();
+    localStorage.removeItem("esc_history");
+    renderStats(); renderMistakes(); renderChart();
   }
 };
 
