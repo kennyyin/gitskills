@@ -11,6 +11,7 @@
     --panel-2: #273449;
     --accent: #38bdf8;
     --accent-2: #22c55e;
+    --gold: #facc15;
     --danger: #f87171;
     --text: #e2e8f0;
     --muted: #94a3b8;
@@ -25,52 +26,49 @@
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
   }
-  header {
-    text-align: center;
-    padding: 28px 16px 12px;
-  }
+  header { text-align: center; padding: 26px 16px 6px; }
   header h1 { margin: 0; font-size: 24px; letter-spacing: .5px; }
   header p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
 
-  .wrap { max-width: 760px; margin: 0 auto; padding: 16px; }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 16px; }
 
-  .scenarios {
-    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
-    margin: 8px 0 20px;
-  }
-  .chip {
-    border: 1px solid #334155; background: var(--panel); color: var(--text);
-    padding: 8px 14px; border-radius: 999px; cursor: pointer; font-size: 14px;
-    transition: .15s;
-  }
+  /* 顶部统计条 */
+  .stats { display: flex; gap: 10px; justify-content: center; margin: 12px 0 18px; flex-wrap: wrap; }
+  .stat { background: var(--panel); border: 1px solid #2b3a52; border-radius: 12px; padding: 10px 16px; text-align: center; min-width: 96px; }
+  .stat b { display: block; font-size: 22px; color: var(--accent); }
+  .stat span { font-size: 12px; color: var(--muted); }
+
+  /* 模式切换 */
+  .modes { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
+  .mode-btn { flex: 0 0 auto; border: 1px solid #334155; background: var(--panel); color: var(--text);
+    padding: 9px 18px; border-radius: 999px; cursor: pointer; font-size: 14px; transition: .15s; font-weight: 600; }
+  .mode-btn.active { background: var(--accent); color: #052e3f; border-color: var(--accent); }
+
+  .scenarios { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 0 0 18px; }
+  .chip { border: 1px solid #334155; background: var(--panel); color: var(--text);
+    padding: 8px 14px; border-radius: 999px; cursor: pointer; font-size: 14px; transition: .15s; }
   .chip:hover { border-color: var(--accent); }
   .chip.active { background: var(--accent); color: #052e3f; border-color: var(--accent); font-weight: 600; }
 
-  .card {
-    background: var(--panel); border: 1px solid #2b3a52; border-radius: var(--radius);
-    padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.25);
-  }
+  .card { background: var(--panel); border: 1px solid #2b3a52; border-radius: var(--radius);
+    padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
   .progress { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
   .zh { color: var(--muted); font-size: 15px; margin-bottom: 6px; }
   .en { font-size: 26px; font-weight: 600; line-height: 1.35; margin-bottom: 4px; }
-  .phon { color: var(--accent); font-size: 14px; margin-bottom: 18px; min-height: 18px; }
+  .phon { color: var(--accent); font-size: 14px; margin-bottom: 18px; min-height: 4px; }
 
   .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
-  button.btn {
-    border: none; border-radius: 12px; padding: 12px 18px; font-size: 15px;
-    cursor: pointer; color: #fff; display: inline-flex; align-items: center; gap: 8px;
-    transition: .15s; font-weight: 600;
-  }
+  button.btn { border: none; border-radius: 12px; padding: 12px 18px; font-size: 15px; cursor: pointer;
+    color: #fff; display: inline-flex; align-items: center; gap: 8px; transition: .15s; font-weight: 600; }
   .btn-play { background: var(--accent); color: #052e3f; }
   .btn-rec  { background: var(--accent-2); }
   .btn-rec.recording { background: var(--danger); animation: pulse 1s infinite; }
-  .btn-slow { background: var(--panel-2); }
-  .btn-nav  { background: var(--panel-2); }
+  .btn-slow, .btn-nav { background: var(--panel-2); }
   button.btn:hover { filter: brightness(1.08); }
   button.btn:disabled { opacity: .45; cursor: not-allowed; }
   @keyframes pulse { 0%,100%{ transform: scale(1);} 50%{ transform: scale(1.04);} }
 
-  .result { margin-top: 6px; min-height: 80px; }
+  .result { margin-top: 6px; min-height: 10px; }
   .heard { background: var(--panel-2); border-radius: 12px; padding: 12px 14px; font-size: 16px; }
   .heard .label { color: var(--muted); font-size: 12px; display: block; margin-bottom: 4px; }
   .score-row { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
@@ -81,108 +79,324 @@
   .diff .ok { color: var(--accent-2); }
   .diff .miss { color: var(--danger); text-decoration: underline; text-underline-offset: 3px; }
   .tip { color: var(--muted); font-size: 13px; margin-top: 10px; }
-
   .nav { display: flex; justify-content: space-between; margin-top: 18px; }
+
+  /* 对话模式 */
+  .turns { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+  .turn { display: flex; gap: 10px; align-items: flex-start; opacity: .35; transition: .25s; }
+  .turn.active { opacity: 1; }
+  .turn.me { flex-direction: row-reverse; }
+  .avatar { width: 40px; height: 40px; border-radius: 50%; flex: 0 0 40px; display: flex;
+    align-items: center; justify-content: center; font-size: 20px; background: var(--panel-2); }
+  .bubble { background: var(--panel-2); border-radius: 14px; padding: 10px 14px; max-width: 78%; }
+  .turn.me .bubble { background: #0e7490; }
+  .bubble .en { font-size: 17px; font-weight: 600; margin: 0; line-height: 1.4; }
+  .bubble .zh { font-size: 13px; margin: 4px 0 0; }
+  .bubble .mini { font-size: 12px; margin-top: 6px; color: #cbd5e1; }
+  .role-pick { display: flex; gap: 8px; justify-content: center; margin-bottom: 14px; }
+
+  /* 错题本 */
+  .mistake { background: var(--panel); border: 1px solid #2b3a52; border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 10px; }
+  .mistake .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .mistake .en { font-size: 17px; margin: 0; }
+  .mistake .zh { font-size: 13px; margin: 4px 0 0; }
+  .mistake .meta { font-size: 12px; color: var(--muted); }
+  .badge { font-size: 13px; font-weight: 800; padding: 3px 10px; border-radius: 999px; color: #052e3f; }
+  .row-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .mini-btn { border: none; border-radius: 8px; padding: 7px 12px; font-size: 13px; cursor: pointer;
+    background: var(--panel-2); color: var(--text); font-weight: 600; }
+  .mini-btn.play { background: var(--accent); color: #052e3f; }
+  .mini-btn.del  { background: #3f1d1d; color: var(--danger); }
+  .empty { text-align: center; color: var(--muted); padding: 40px 16px; }
+
   .footer { text-align: center; color: var(--muted); font-size: 12px; padding: 24px 12px; }
   .footer code { color: var(--accent); }
   .warn { background: #422006; color: #fbbf24; border: 1px solid #854d0e;
-          padding: 10px 14px; border-radius: 12px; font-size: 13px; margin: 12px 0; display: none; }
+    padding: 10px 14px; border-radius: 12px; font-size: 13px; margin: 12px 0; display: none; }
+  .hidden { display: none !important; }
 </style>
 </head>
 <body>
   <header>
     <h1>🗣️ 英语口语陪练</h1>
-    <p>听标准发音 → 跟读 → 即时打分纠错。专为日常口语交流设计。</p>
+    <p>听标准发音 → 跟读 → 即时打分纠错 · 专为日常口语交流设计</p>
   </header>
 
   <div class="wrap">
-    <div id="scenarios" class="scenarios"></div>
+    <div class="stats">
+      <div class="stat"><b id="stStreak">0</b><span>连续打卡(天)</span></div>
+      <div class="stat"><b id="stToday">0</b><span>今日练习(句)</span></div>
+      <div class="stat"><b id="stMistakes">0</b><span>错题本(句)</span></div>
+    </div>
+
+    <div class="modes">
+      <button class="mode-btn active" data-mode="practice">📚 练习</button>
+      <button class="mode-btn" data-mode="dialogue">💬 对话</button>
+      <button class="mode-btn" data-mode="review">📒 错题本</button>
+    </div>
 
     <div id="browserWarn" class="warn">
       ⚠️ 你的浏览器不支持语音识别（录音打分）。请用 <b>Chrome</b> 或 <b>Edge</b> 桌面版打开本页面，即可使用完整功能。朗读功能仍可正常使用。
     </div>
 
-    <div class="card">
-      <div class="progress" id="progress"></div>
-      <div class="zh" id="zh"></div>
-      <div class="en" id="en"></div>
-      <div class="phon" id="phon"></div>
-
-      <div class="controls">
-        <button class="btn btn-play" id="playBtn">🔊 标准发音</button>
-        <button class="btn btn-slow" id="slowBtn">🐢 慢速</button>
-        <button class="btn btn-rec" id="recBtn">🎤 点击跟读</button>
+    <!-- ===== 练习模式 ===== -->
+    <section id="practiceView">
+      <div id="scenarios" class="scenarios"></div>
+      <div class="card">
+        <div class="progress" id="progress"></div>
+        <div class="zh" id="zh"></div>
+        <div class="en" id="en"></div>
+        <div class="phon" id="phon"></div>
+        <div class="controls">
+          <button class="btn btn-play" id="playBtn">🔊 标准发音</button>
+          <button class="btn btn-slow" id="slowBtn">🐢 慢速</button>
+          <button class="btn btn-rec" id="recBtn">🎤 点击跟读</button>
+        </div>
+        <div class="result" id="result"></div>
+        <div class="nav">
+          <button class="btn btn-nav" id="prevBtn">← 上一句</button>
+          <button class="btn btn-nav" id="nextBtn">下一句 →</button>
+        </div>
       </div>
+    </section>
 
-      <div class="result" id="result"></div>
-
-      <div class="nav">
-        <button class="btn btn-nav" id="prevBtn">← 上一句</button>
-        <button class="btn btn-nav" id="nextBtn">下一句 →</button>
+    <!-- ===== 对话模式 ===== -->
+    <section id="dialogueView" class="hidden">
+      <div id="dialogScenes" class="scenarios"></div>
+      <div class="role-pick" id="rolePick"></div>
+      <div class="card">
+        <div class="progress" id="dlgProgress"></div>
+        <div class="turns" id="turns"></div>
+        <div class="controls">
+          <button class="btn btn-play" id="dlgPlayBtn">▶️ 对方朗读</button>
+          <button class="btn btn-rec" id="dlgRecBtn">🎤 轮到我说</button>
+          <button class="btn btn-nav" id="dlgRestartBtn">↺ 重新开始</button>
+        </div>
+        <div class="result" id="dlgResult"></div>
       </div>
-    </div>
+    </section>
+
+    <!-- ===== 错题本 ===== -->
+    <section id="reviewView" class="hidden">
+      <div id="mistakeList"></div>
+    </section>
 
     <div class="footer">
-      纯网页 · 无需安装 · 无需联网 API · 数据不离开你的浏览器<br/>
-      录音评分基于浏览器内置 <code>Web Speech API</code>。
+      纯网页 · 无需安装 · 无需联网 API · 数据仅存在你本机浏览器<br/>
+      录音评分基于浏览器内置 <code>Web Speech API</code> ·
+      <a href="#" id="clearAll" style="color:var(--muted)">清空本地数据</a>
     </div>
   </div>
 
 <script>
-/* ---------- 语料：按日常场景分组 ---------- */
+/* ================= 语料 ================= */
 const DATA = {
   "打招呼 Greetings": [
     { en: "Hi, how's it going?", zh: "嗨，最近怎么样？" },
     { en: "It's nice to meet you.", zh: "很高兴认识你。" },
     { en: "Long time no see! How have you been?", zh: "好久不见！你最近过得怎么样？" },
+    { en: "What have you been up to lately?", zh: "你最近都在忙些什么？" },
     { en: "Have a great day!", zh: "祝你今天愉快！" },
+    { en: "Take care, see you soon.", zh: "保重，回头见。" },
   ],
   "闲聊 Small Talk": [
     { en: "The weather is really nice today.", zh: "今天天气真不错。" },
     { en: "What do you do for fun?", zh: "你平时喜欢做什么消遣？" },
     { en: "I'm just hanging out at home this weekend.", zh: "这个周末我就待在家里。" },
     { en: "That sounds amazing! Tell me more.", zh: "听起来太棒了！再多说点。" },
+    { en: "By the way, did you watch the game last night?", zh: "对了，你看了昨晚的比赛吗？" },
+    { en: "I totally agree with you.", zh: "我完全同意你的看法。" },
   ],
   "餐厅 Restaurant": [
     { en: "Could I see the menu, please?", zh: "可以给我看一下菜单吗？" },
     { en: "I'll have the chicken, please.", zh: "我要一份鸡肉，谢谢。" },
-    { en: "Can we get the check, please?", zh: "可以结账吗？" },
     { en: "Is this dish spicy?", zh: "这道菜辣吗？" },
+    { en: "Can I get a glass of water?", zh: "可以给我一杯水吗？" },
+    { en: "Can we get the check, please?", zh: "可以结账吗？" },
+    { en: "Everything was delicious, thank you.", zh: "都很好吃，谢谢。" },
   ],
   "问路 Directions": [
     { en: "Excuse me, how do I get to the station?", zh: "打扰一下，请问车站怎么走？" },
     { en: "Is it within walking distance?", zh: "走路能到吗？" },
+    { en: "Which way is the nearest subway?", zh: "最近的地铁站往哪个方向？" },
     { en: "Turn left at the next corner.", zh: "在下个路口左转。" },
+    { en: "It's just around the corner.", zh: "就在拐角那儿。" },
     { en: "Thanks for your help, I really appreciate it.", zh: "谢谢你的帮助，非常感激。" },
   ],
   "购物 Shopping": [
     { en: "How much does this cost?", zh: "这个多少钱？" },
     { en: "Do you have this in a larger size?", zh: "这件有大一号的吗？" },
+    { en: "Can I try this on?", zh: "我可以试穿一下吗？" },
     { en: "I'm just looking, thanks.", zh: "我只是随便看看，谢谢。" },
-    { en: "Can I pay by card?", zh: "可以刷卡吗？" },
+    { en: "Do you take credit cards?", zh: "你们收信用卡吗？" },
+    { en: "Could I get a receipt, please?", zh: "可以给我一张收据吗？" },
   ],
   "工作 At Work": [
     { en: "Let's schedule a meeting for tomorrow.", zh: "我们安排明天开个会吧。" },
     { en: "Could you send me that file?", zh: "你能把那个文件发给我吗？" },
     { en: "I'll get back to you as soon as possible.", zh: "我会尽快回复你。" },
+    { en: "Can we go over this together?", zh: "我们能一起过一遍这个吗？" },
     { en: "Great job on the presentation!", zh: "演示做得很棒！" },
+    { en: "Let me know if you have any questions.", zh: "有任何问题随时告诉我。" },
+  ],
+  "旅行 Travel": [
+    { en: "I'd like to check in, please.", zh: "我想办理入住，谢谢。" },
+    { en: "What time is checkout?", zh: "几点退房？" },
+    { en: "Could you call me a taxi?", zh: "能帮我叫辆出租车吗？" },
+    { en: "How long does the flight take?", zh: "飞行大概要多久？" },
+    { en: "Is breakfast included?", zh: "含早餐吗？" },
+    { en: "Could you recommend a good place to eat nearby?", zh: "你能推荐附近好吃的地方吗？" },
   ],
 };
 
-/* ---------- 状态 ---------- */
-let currentScene = Object.keys(DATA)[0];
-let index = 0;
+/* ================= 对话剧本 =================
+   每段对话两个角色 A / B，用户可选扮演其中一方。 */
+const DIALOGUES = {
+  "咖啡店点单 At a Café": {
+    roles: ["店员 Barista", "顾客 Customer"],
+    turns: [
+      { role: 0, en: "Hi there! What can I get for you?", zh: "你好！想喝点什么？" },
+      { role: 1, en: "Hi, I'd like a medium latte, please.", zh: "你好，我要一杯中杯拿铁。" },
+      { role: 0, en: "Sure. Would you like anything to eat?", zh: "好的。需要来点吃的吗？" },
+      { role: 1, en: "Yes, a chocolate muffin, please.", zh: "好的，要一个巧克力玛芬。" },
+      { role: 0, en: "That'll be six dollars. For here or to go?", zh: "一共六美元。在这儿喝还是带走？" },
+      { role: 1, en: "To go, please. Here's my card.", zh: "带走，谢谢。这是我的卡。" },
+    ],
+  },
+  "初次见面 Meeting Someone": {
+    roles: ["你 You", "新同事 Coworker"],
+    turns: [
+      { role: 1, en: "Hi, you must be the new intern. I'm Alex.", zh: "嗨，你一定是新来的实习生吧。我是 Alex。" },
+      { role: 0, en: "Hi Alex, nice to meet you. I'm Sam.", zh: "嗨 Alex，很高兴认识你。我是 Sam。" },
+      { role: 1, en: "Welcome aboard! How was your first day?", zh: "欢迎加入！第一天感觉怎么样？" },
+      { role: 0, en: "It's been great, everyone is so friendly.", zh: "挺好的，大家都很友善。" },
+      { role: 1, en: "Glad to hear that. Let me know if you need anything.", zh: "很高兴听你这么说。有需要尽管找我。" },
+      { role: 0, en: "Thanks, I really appreciate it.", zh: "谢谢，非常感激。" },
+    ],
+  },
+  "问路 Asking Directions": {
+    roles: ["游客 Tourist", "路人 Local"],
+    turns: [
+      { role: 0, en: "Excuse me, how do I get to the museum?", zh: "打扰一下，请问博物馆怎么走？" },
+      { role: 1, en: "Sure! Go straight and turn right at the bank.", zh: "好的！直走，在银行那儿右转。" },
+      { role: 0, en: "Is it far from here?", zh: "离这儿远吗？" },
+      { role: 1, en: "No, it's about a five-minute walk.", zh: "不远，大概走五分钟。" },
+      { role: 0, en: "Great, thank you so much!", zh: "太好了，非常感谢！" },
+      { role: 1, en: "You're welcome. Enjoy your visit!", zh: "不客气，玩得开心！" },
+    ],
+  },
+};
 
+/* ================= 本地存储 ================= */
+const LS = {
+  get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
+  set(k, v) { localStorage.setItem(k, JSON.stringify(v)); },
+};
+const todayStr = () => new Date().toISOString().slice(0, 10);
+
+function loadStreak() { return LS.get("esc_streak", { lastDate: "", count: 0, todayCount: 0 }); }
+function saveStreak(s) { LS.set("esc_streak", s); }
+
+function recordPractice() {
+  const s = loadStreak();
+  const today = todayStr();
+  if (s.lastDate !== today) {
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    s.count = s.lastDate === yesterday ? (s.count + 1) : 1;
+    s.lastDate = today;
+    s.todayCount = 0;
+  }
+  s.todayCount = (s.todayCount || 0) + 1;
+  saveStreak(s);
+  renderStats();
+}
+
+function loadMistakes() { return LS.get("esc_mistakes", []); }
+function saveMistakes(m) { LS.set("esc_mistakes", m); }
+function addMistake(item, score) {
+  const m = loadMistakes();
+  const exist = m.find(x => x.en === item.en);
+  if (exist) { exist.score = score; exist.date = todayStr(); exist.count = (exist.count || 1) + 1; }
+  else { m.unshift({ en: item.en, zh: item.zh, score, date: todayStr(), count: 1 }); }
+  saveMistakes(m);
+  renderStats();
+}
+function removeMistake(en) { saveMistakes(loadMistakes().filter(x => x.en !== en)); renderStats(); renderMistakes(); }
+
+function renderStats() {
+  const s = loadStreak();
+  $("stStreak").textContent = s.count || 0;
+  $("stToday").textContent = s.lastDate === todayStr() ? (s.todayCount || 0) : 0;
+  $("stMistakes").textContent = loadMistakes().length;
+}
+
+/* ================= 通用 ================= */
 const $ = (id) => document.getElementById(id);
 const synth = window.speechSynthesis;
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 const srSupported = !!SR;
+const MISTAKE_THRESHOLD = 70;
 
-/* ---------- 渲染场景标签 ---------- */
+function speak(text, rate, cb) {
+  if (!synth) { cb && cb(); return; }
+  synth.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US"; u.rate = rate;
+  if (cb) u.onend = cb;
+  synth.speak(u);
+}
+
+function normalize(s) {
+  return s.toLowerCase().replace(/[^a-z0-9'\s]/g, " ").replace(/\s+/g, " ").trim();
+}
+function scoreSpeech(target, heard) {
+  const t = normalize(target).split(" ").filter(Boolean);
+  const h = normalize(heard).split(" ").filter(Boolean);
+  const heardSet = {}; h.forEach(w => heardSet[w] = (heardSet[w] || 0) + 1);
+  const used = {};
+  const marks = t.map(word => {
+    if (heardSet[word] && (used[word] || 0) < heardSet[word]) { used[word] = (used[word]||0)+1; return { word, ok: true }; }
+    return { word, ok: false };
+  });
+  const correct = marks.filter(m => m.ok).length;
+  const score = t.length ? Math.round((correct / t.length) * 100) : 0;
+  return { score, marks };
+}
+function colorFor(s) { return s >= 85 ? "#22c55e" : s >= 60 ? "#facc15" : "#f87171"; }
+function feedbackFor(s) {
+  if (s >= 90) return "🎉 太棒了，发音非常清晰！";
+  if (s >= 75) return "👍 不错！再注意一下标红的词。";
+  if (s >= 50) return "💪 有进步，跟着标准发音再练几遍。";
+  return "🔁 没关系，先听标准发音，再慢速跟读。";
+}
+function diffHtml(marks) {
+  return marks.map(m => `<span class="${m.ok ? "ok" : "miss"}">${m.word}</span>`).join(" ");
+}
+
+/* 共用录音：传入目标句和结果回调 */
+let recognizing = false, recognition = null;
+function record(targetText, onScore, btn) {
+  if (!srSupported) return;
+  if (recognizing) { recognition && recognition.stop(); return; }
+  recognition = new SR();
+  recognition.lang = "en-US"; recognition.interimResults = false; recognition.maxAlternatives = 1;
+  const label = btn.textContent;
+  recognition.onstart = () => { recognizing = true; btn.classList.add("recording"); btn.textContent = "🔴 正在听… 点击停止"; };
+  recognition.onerror = (e) => { onScore(null, e.error); };
+  recognition.onend = () => { recognizing = false; btn.classList.remove("recording"); btn.textContent = label; };
+  recognition.onresult = (e) => { onScore(e.results[0][0].transcript, null); };
+  recognition.start();
+}
+
+/* ================= 练习模式 ================= */
+let currentScene = Object.keys(DATA)[0];
+let index = 0;
+const sentences = () => DATA[currentScene];
+
 function renderScenes() {
-  const box = $("scenarios");
-  box.innerHTML = "";
-  Object.keys(DATA).forEach((name) => {
+  const box = $("scenarios"); box.innerHTML = "";
+  Object.keys(DATA).forEach(name => {
     const c = document.createElement("div");
     c.className = "chip" + (name === currentScene ? " active" : "");
     c.textContent = name;
@@ -190,135 +404,200 @@ function renderScenes() {
     box.appendChild(c);
   });
 }
-
-function sentences() { return DATA[currentScene]; }
-
 function renderCard() {
-  const list = sentences();
-  const item = list[index];
+  const list = sentences(), item = list[index];
   $("progress").textContent = `${currentScene} · 第 ${index + 1} / ${list.length} 句`;
-  $("zh").textContent = item.zh;
-  $("en").textContent = item.en;
-  $("phon").textContent = "";
+  $("zh").textContent = item.zh; $("en").textContent = item.en;
   $("result").innerHTML = "";
   $("prevBtn").disabled = index === 0;
   $("nextBtn").disabled = index === list.length - 1;
   $("recBtn").disabled = !srSupported;
 }
-
-/* ---------- 朗读 (TTS) ---------- */
-function speak(text, rate) {
-  if (!synth) return;
-  synth.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "en-US";
-  u.rate = rate;
-  synth.speak(u);
-}
-
-/* ---------- 评分逻辑 ---------- */
-function normalize(s) {
-  return s.toLowerCase().replace(/[^a-z0-9'\s]/g, " ").replace(/\s+/g, " ").trim();
-}
-function scoreSpeech(target, heard) {
-  const t = normalize(target).split(" ").filter(Boolean);
-  const h = normalize(heard).split(" ").filter(Boolean);
-  const heardSet = {};
-  h.forEach(w => heardSet[w] = (heardSet[w] || 0) + 1);
-  const used = {};
-  const marks = t.map(word => {
-    if (heardSet[word] && (used[word] || 0) < heardSet[word]) {
-      used[word] = (used[word] || 0) + 1;
-      return { word, ok: true };
-    }
-    return { word, ok: false };
-  });
-  const correct = marks.filter(m => m.ok).length;
-  const score = t.length ? Math.round((correct / t.length) * 100) : 0;
-  return { score, marks };
-}
-
-function colorFor(score) {
-  if (score >= 85) return "#22c55e";
-  if (score >= 60) return "#facc15";
-  return "#f87171";
-}
-function feedbackFor(score) {
-  if (score >= 90) return "🎉 太棒了，发音非常清晰！";
-  if (score >= 75) return "👍 不错！再注意一下标红的词。";
-  if (score >= 50) return "💪 有进步，跟着标准发音再练几遍。";
-  return "🔁 没关系，先点「标准发音」听一听，再慢速跟读。";
-}
-
-function renderResult(target, heard) {
+function renderPracticeResult(target, heard, err) {
+  if (err) { $("result").innerHTML = `<div class="tip">⚠️ 录音出错：${err}。请检查麦克风权限。</div>`; return; }
   const { score, marks } = scoreSpeech(target, heard);
-  const diffHtml = marks
-    .map(m => `<span class="${m.ok ? "ok" : "miss"}">${m.word}</span>`)
-    .join(" ");
   $("result").innerHTML = `
     <div class="heard"><span class="label">识别到你说的：</span>${heard || "（没听清）"}</div>
     <div class="score-row">
       <div class="score-num" style="color:${colorFor(score)}">${score}</div>
       <div class="score-bar"><div class="score-fill" style="background:${colorFor(score)}"></div></div>
     </div>
-    <div class="diff">${diffHtml}</div>
-    <div class="tip">${feedbackFor(score)}</div>
-  `;
-  requestAnimationFrame(() => {
-    $("result").querySelector(".score-fill").style.width = score + "%";
-  });
+    <div class="diff">${diffHtml(marks)}</div>
+    <div class="tip">${feedbackFor(score)}</div>`;
+  requestAnimationFrame(() => { $("result").querySelector(".score-fill").style.width = score + "%"; });
+  recordPractice();
+  if (score < MISTAKE_THRESHOLD) addMistake(sentences()[index], score);
 }
 
-/* ---------- 语音识别 (STT) ---------- */
-let recognizing = false;
-let recognition = null;
-function startRecognition() {
-  if (!srSupported) return;
-  if (recognizing) { recognition && recognition.stop(); return; }
-  recognition = new SR();
-  recognition.lang = "en-US";
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-
-  recognition.onstart = () => {
-    recognizing = true;
-    $("recBtn").classList.add("recording");
-    $("recBtn").textContent = "🔴 正在听… 点击停止";
-  };
-  recognition.onerror = (e) => {
-    $("result").innerHTML = `<div class="tip">⚠️ 录音出错：${e.error}。请检查麦克风权限。</div>`;
-  };
-  recognition.onend = () => {
-    recognizing = false;
-    $("recBtn").classList.remove("recording");
-    $("recBtn").textContent = "🎤 点击跟读";
-  };
-  recognition.onresult = (e) => {
-    const heard = e.results[0][0].transcript;
-    renderResult(sentences()[index].en, heard);
-  };
-  recognition.start();
-}
-
-/* ---------- 事件绑定 ---------- */
 $("playBtn").onclick = () => speak(sentences()[index].en, 1);
 $("slowBtn").onclick = () => speak(sentences()[index].en, 0.6);
-$("recBtn").onclick = startRecognition;
+$("recBtn").onclick = () => record(sentences()[index].en, (h, e) => renderPracticeResult(sentences()[index].en, h, e), $("recBtn"));
 $("prevBtn").onclick = () => { if (index > 0) { index--; renderCard(); } };
 $("nextBtn").onclick = () => { if (index < sentences().length - 1) { index++; renderCard(); } };
 
+/* ================= 对话模式 ================= */
+let dlgKey = Object.keys(DIALOGUES)[0];
+let myRole = 0;     // 用户扮演的角色
+let turnPos = 0;    // 当前进行到第几句
+const dlg = () => DIALOGUES[dlgKey];
+
+function renderDialogScenes() {
+  const box = $("dialogScenes"); box.innerHTML = "";
+  Object.keys(DIALOGUES).forEach(name => {
+    const c = document.createElement("div");
+    c.className = "chip" + (name === dlgKey ? " active" : "");
+    c.textContent = name;
+    c.onclick = () => { dlgKey = name; myRole = 0; restartDialogue(); renderDialogScenes(); };
+    box.appendChild(c);
+  });
+}
+function renderRolePick() {
+  const box = $("rolePick"); box.innerHTML = "";
+  dlg().roles.forEach((r, i) => {
+    const b = document.createElement("button");
+    b.className = "mode-btn" + (i === myRole ? " active" : "");
+    b.textContent = "我演：" + r;
+    b.onclick = () => { myRole = i; restartDialogue(); };
+    box.appendChild(b);
+  });
+}
+function restartDialogue() {
+  turnPos = 0;
+  $("dlgResult").innerHTML = "";
+  renderRolePick();
+  renderTurns();
+  advanceDialogue();
+}
+function renderTurns() {
+  const box = $("turns"); box.innerHTML = "";
+  dlg().turns.forEach((t, i) => {
+    const mine = t.role === myRole;
+    const row = document.createElement("div");
+    row.className = "turn " + (mine ? "me " : "") + (i <= turnPos ? "active" : "");
+    const shown = i < turnPos || (i === turnPos && !mine);
+    row.innerHTML = `
+      <div class="avatar">${mine ? "🧑" : "🤖"}</div>
+      <div class="bubble">
+        <p class="en">${shown ? t.en : (mine ? "🎤 轮到你说这句…" : "…")}</p>
+        ${shown ? `<p class="zh">${t.zh}</p>` : (mine ? `<p class="zh">${t.zh}</p>` : "")}
+      </div>`;
+    box.appendChild(row);
+  });
+  $("dlgProgress").textContent = `${dlgKey} · 第 ${Math.min(turnPos + 1, dlg().turns.length)} / ${dlg().turns.length} 句`;
+}
+/* 推进对话：若当前轮是对方的，自动朗读并前进；若是用户的，等待录音 */
+function advanceDialogue() {
+  const turns = dlg().turns;
+  if (turnPos >= turns.length) {
+    $("dlgResult").innerHTML = `<div class="tip">✅ 这段对话完成了！点「重新开始」再练一遍，或换个角色。</div>`;
+    $("dlgRecBtn").disabled = true; $("dlgPlayBtn").disabled = true;
+    return;
+  }
+  const t = turns[turnPos];
+  renderTurns();
+  if (t.role === myRole) {
+    $("dlgRecBtn").disabled = !srSupported;
+    $("dlgPlayBtn").disabled = false;
+  } else {
+    $("dlgRecBtn").disabled = true;
+    $("dlgPlayBtn").disabled = false;
+    speak(t.en, 1, () => { turnPos++; advanceDialogue(); });
+  }
+}
+function renderDlgResult(target, heard, err) {
+  if (err) { $("dlgResult").innerHTML = `<div class="tip">⚠️ 录音出错：${err}。</div>`; return; }
+  const { score, marks } = scoreSpeech(target, heard);
+  $("dlgResult").innerHTML = `
+    <div class="heard"><span class="label">你说的：</span>${heard || "（没听清）"}</div>
+    <div class="score-row">
+      <div class="score-num" style="color:${colorFor(score)}">${score}</div>
+      <div class="score-bar"><div class="score-fill" style="background:${colorFor(score)}; width:${score}%"></div></div>
+    </div>
+    <div class="diff">${diffHtml(marks)}</div>
+    <div class="tip">${feedbackFor(score)} ${score >= 50 ? "继续下一句 →" : "可重说一次。"}</div>`;
+  recordPractice();
+  if (score < MISTAKE_THRESHOLD) addMistake({ en: target, zh: dlg().turns[turnPos].zh }, score);
+  if (score >= 50) { turnPos++; setTimeout(advanceDialogue, 700); }
+}
+$("dlgPlayBtn").onclick = () => { const t = dlg().turns[turnPos]; if (t) speak(t.en, 1); };
+$("dlgRecBtn").onclick = () => { const t = dlg().turns[turnPos]; if (t) record(t.en, (h, e) => renderDlgResult(t.en, h, e), $("dlgRecBtn")); };
+$("dlgRestartBtn").onclick = () => { $("dlgRecBtn").disabled = false; $("dlgPlayBtn").disabled = false; restartDialogue(); };
+
+/* ================= 错题本 ================= */
+function renderMistakes() {
+  const box = $("mistakeList");
+  const list = loadMistakes();
+  if (!list.length) { box.innerHTML = `<div class="empty">📭 错题本是空的。<br/>练习时得分低于 ${MISTAKE_THRESHOLD} 的句子会自动收进这里。</div>`; return; }
+  box.innerHTML = "";
+  list.forEach(m => {
+    const el = document.createElement("div");
+    el.className = "mistake";
+    el.innerHTML = `
+      <div class="top">
+        <p class="en">${m.en}</p>
+        <span class="badge" style="background:${colorFor(m.score)}">${m.score}</span>
+      </div>
+      <p class="zh">${m.zh}</p>
+      <div class="row-actions">
+        <button class="mini-btn play">🔊 朗读</button>
+        <button class="mini-btn rec">🎤 重练</button>
+        <button class="mini-btn del">🗑 移除</button>
+        <span class="meta" style="margin-left:auto">练习 ${m.count || 1} 次 · ${m.date}</span>
+      </div>
+      <div class="result"></div>`;
+    el.querySelector(".play").onclick = () => speak(m.en, 1);
+    el.querySelector(".del").onclick = () => removeMistake(m.en);
+    const recBtn = el.querySelector(".rec");
+    recBtn.onclick = () => record(m.en, (h, e) => {
+      const resBox = el.querySelector(".result");
+      if (e) { resBox.innerHTML = `<div class="tip">⚠️ ${e}</div>`; return; }
+      const { score, marks } = scoreSpeech(m.en, h);
+      resBox.innerHTML = `<div class="diff" style="margin-top:10px">${diffHtml(marks)}</div>
+        <div class="tip"><b style="color:${colorFor(score)}">${score} 分</b> · ${feedbackFor(score)}</div>`;
+      recordPractice();
+      if (score >= MISTAKE_THRESHOLD) { removeMistake(m.en); }
+      else { addMistake({ en: m.en, zh: m.zh }, score); }
+    }, recBtn);
+    box.appendChild(el);
+  });
+}
+
+/* ================= 模式切换 ================= */
+function setMode(mode) {
+  document.querySelectorAll(".mode-btn").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
+  $("practiceView").classList.toggle("hidden", mode !== "practice");
+  $("dialogueView").classList.toggle("hidden", mode !== "dialogue");
+  $("reviewView").classList.toggle("hidden", mode !== "review");
+  if (synth) synth.cancel();
+  if (recognizing && recognition) recognition.stop();
+  if (mode === "dialogue") { $("dlgRecBtn").disabled = false; $("dlgPlayBtn").disabled = false; restartDialogue(); }
+  if (mode === "review") renderMistakes();
+}
+document.querySelectorAll(".mode-btn").forEach(b => b.onclick = () => setMode(b.dataset.mode));
+
 document.addEventListener("keydown", (e) => {
-  if (e.target.tagName === "INPUT") return;
+  if ($("practiceView").classList.contains("hidden")) return;
   if (e.code === "Space") { e.preventDefault(); $("playBtn").click(); }
   if (e.code === "ArrowRight") $("nextBtn").click();
   if (e.code === "ArrowLeft") $("prevBtn").click();
   if (e.key.toLowerCase() === "r") $("recBtn").click();
 });
 
-/* ---------- 初始化 ---------- */
+$("clearAll").onclick = (e) => {
+  e.preventDefault();
+  if (confirm("确定要清空打卡记录和错题本吗？此操作不可恢复。")) {
+    localStorage.removeItem("esc_streak");
+    localStorage.removeItem("esc_mistakes");
+    renderStats(); renderMistakes();
+  }
+};
+
+/* ================= 初始化 ================= */
 if (!srSupported) $("browserWarn").style.display = "block";
+renderStats();
 renderScenes();
 renderCard();
+renderDialogScenes();
 </script>
 </body>
 </html>
