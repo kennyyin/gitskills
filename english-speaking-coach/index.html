@@ -306,6 +306,39 @@ const DIALOGUES = {
       { role: 1, en: "You're welcome. Enjoy your visit!", zh: "不客气，玩得开心！" },
     ],
   },
+  "餐厅就餐 At a Restaurant": {
+    roles: ["服务员 Waiter", "顾客 Customer"],
+    turns: [
+      { role: 0, en: "Good evening! Do you have a reservation?", zh: "晚上好！您有预订吗？" },
+      { role: 1, en: "Yes, a table for two, please.", zh: "有的，两位，谢谢。" },
+      { role: 0, en: "Right this way. Here is your menu.", zh: "这边请。这是您的菜单。" },
+      { role: 1, en: "Thank you. What do you recommend?", zh: "谢谢。你推荐什么？" },
+      { role: 0, en: "The grilled salmon is very popular.", zh: "烤三文鱼很受欢迎。" },
+      { role: 1, en: "That sounds great. I'll take it.", zh: "听起来不错，我就要它。" },
+    ],
+  },
+  "看医生 At the Doctor": {
+    roles: ["医生 Doctor", "病人 Patient"],
+    turns: [
+      { role: 0, en: "Hi, what brings you in today?", zh: "你好，今天怎么了？" },
+      { role: 1, en: "I have a sore throat and a fever.", zh: "我喉咙痛，还发烧。" },
+      { role: 0, en: "How long have you felt this way?", zh: "你这样多久了？" },
+      { role: 1, en: "For about three days now.", zh: "大概三天了。" },
+      { role: 0, en: "Let me take a look. Open your mouth, please.", zh: "我来看看。请张开嘴。" },
+      { role: 1, en: "Is it serious, doctor?", zh: "严重吗，医生？" },
+    ],
+  },
+  "电话预约 Making an Appointment": {
+    roles: ["前台 Receptionist", "来电者 Caller"],
+    turns: [
+      { role: 0, en: "Good morning, how can I help you?", zh: "早上好，有什么可以帮您？" },
+      { role: 1, en: "Hi, I'd like to make an appointment.", zh: "你好，我想预约。" },
+      { role: 0, en: "Sure, what day works best for you?", zh: "好的，你哪天方便？" },
+      { role: 1, en: "Is Friday afternoon available?", zh: "周五下午有空吗？" },
+      { role: 0, en: "Yes, three o'clock is open.", zh: "有的，三点空着。" },
+      { role: 1, en: "Perfect. I'll see you then.", zh: "太好了，到时见。" },
+    ],
+  },
 };
 
 /* ================= IPA 音标词典（通用美音, 离线） ================= */
@@ -337,7 +370,13 @@ const IPA = {
   "totally":"ˈtoʊtəli","try":"traɪ","turn":"tɜrn","up":"ʌp","visit":"ˈvɪzɪt","walk":"wɔk","walking":"ˈwɔkɪŋ",
   "was":"wʌz","watch":"wɑtʃ","water":"ˈwɔtər","way":"weɪ","we":"wi","weather":"ˈwɛðər","weekend":"ˈwikɛnd",
   "welcome":"ˈwɛlkəm","what":"wʌt","which":"wɪtʃ","with":"wɪð","within":"wɪˈðɪn","would":"wʊd","yes":"jɛs",
-  "you":"ju","you're":"jʊr","your":"jɔr"
+  "you":"ju","you're":"jʊr","your":"jɔr",
+  "afternoon":"ˌæftərˈnun","an":"ən","appointment":"əˈpɔɪntmənt","available":"əˈveɪləbəl","best":"bɛst",
+  "brings":"brɪŋz","days":"deɪz","doctor":"ˈdɑktər","evening":"ˈivnɪŋ","felt":"fɛlt","fever":"ˈfivər",
+  "friday":"ˈfraɪdeɪ","grilled":"ɡrɪld","look":"lʊk","make":"meɪk","morning":"ˈmɔrnɪŋ","mouth":"maʊθ",
+  "now":"naʊ","o'clock":"əˈklɑk","open":"ˈoʊpən","perfect":"ˈpɜrfɪkt","popular":"ˈpɑpjələr",
+  "reservation":"ˌrɛzərˈveɪʃən","salmon":"ˈsæmən","serious":"ˈsɪriəs","sore":"sɔr","table":"ˈteɪbəl",
+  "then":"ðɛn","three":"θri","throat":"θroʊt","two":"tu","very":"ˈvɛri","works":"wɜrks"
 };
 function ipaFor(sentence) {
   const tokens = sentence.toLowerCase().match(/[a-z']+/g) || [];
@@ -623,7 +662,9 @@ function renderMistakes() {
       const resBox = el.querySelector(".result");
       if (e) { resBox.innerHTML = `<div class="tip">⚠️ ${e}</div>`; return; }
       const { score, marks } = scoreSpeech(m.en, h);
-      resBox.innerHTML = `<div class="diff" style="margin-top:10px">${diffHtml(marks)}</div>
+      resBox.innerHTML = `<div class="heard" style="margin-top:10px"><span class="label">你说的：</span>${h || "（没听清）"}</div>
+        <div class="diff" style="margin-top:10px">${diffHtml(marks)}</div>
+        <div class="mini" style="color:var(--accent);font-size:13px;margin-top:6px">${ipaFor(m.en)}</div>
         <div class="tip"><b style="color:${colorFor(score)}">${score} 分</b> · ${feedbackFor(score)}</div>`;
       logAttempt(score);
       if (score >= MISTAKE_THRESHOLD) { removeMistake(m.en); }
