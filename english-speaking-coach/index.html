@@ -7,24 +7,52 @@
 <style>
   :root {
     --bg: #0f172a;
+    --bg2: #1e293b;
     --panel: #1e293b;
     --panel-2: #273449;
+    --border: #2b3a52;
+    --border-soft: #334155;
     --accent: #38bdf8;
+    --accent-ink: #052e3f;
     --accent-2: #22c55e;
     --gold: #facc15;
     --danger: #f87171;
     --text: #e2e8f0;
     --muted: #94a3b8;
     --radius: 16px;
+    --shadow: 0 10px 30px rgba(0,0,0,.25);
+  }
+  body.light {
+    --bg: #eef2f7;
+    --bg2: #dbe4ee;
+    --panel: #ffffff;
+    --panel-2: #eef2f7;
+    --border: #d8e0ea;
+    --border-soft: #cbd5e1;
+    --accent: #0284c7;
+    --accent-ink: #ffffff;
+    --accent-2: #16a34a;
+    --gold: #d97706;
+    --danger: #dc2626;
+    --text: #0f172a;
+    --muted: #64748b;
+    --shadow: 0 10px 30px rgba(15,23,42,.10);
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     font-family: -apple-system, "PingFang SC", "Microsoft YaHei", Segoe UI, Roboto, sans-serif;
-    background: radial-gradient(1200px 600px at 50% -10%, #1e293b 0%, var(--bg) 60%);
+    background: radial-gradient(1200px 600px at 50% -10%, var(--bg2) 0%, var(--bg) 60%);
     color: var(--text);
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
+    transition: background .3s, color .3s;
+  }
+  .theme-toggle {
+    position: fixed; top: 14px; right: 14px; z-index: 20;
+    width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+    border: 1px solid var(--border); background: var(--panel); color: var(--text);
+    font-size: 18px; box-shadow: var(--shadow);
   }
   header { text-align: center; padding: 26px 16px 6px; }
   header h1 { margin: 0; font-size: 24px; letter-spacing: .5px; }
@@ -34,24 +62,24 @@
 
   /* 顶部统计条 */
   .stats { display: flex; gap: 10px; justify-content: center; margin: 12px 0 18px; flex-wrap: wrap; }
-  .stat { background: var(--panel); border: 1px solid #2b3a52; border-radius: 12px; padding: 10px 16px; text-align: center; min-width: 96px; }
+  .stat { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 10px 16px; text-align: center; min-width: 96px; }
   .stat b { display: block; font-size: 22px; color: var(--accent); }
   .stat span { font-size: 12px; color: var(--muted); }
 
   /* 模式切换 */
-  .modes { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
-  .mode-btn { flex: 0 0 auto; border: 1px solid #334155; background: var(--panel); color: var(--text);
+  .modes { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .mode-btn { flex: 0 0 auto; border: 1px solid var(--border-soft); background: var(--panel); color: var(--text);
     padding: 9px 18px; border-radius: 999px; cursor: pointer; font-size: 14px; transition: .15s; font-weight: 600; }
-  .mode-btn.active { background: var(--accent); color: #052e3f; border-color: var(--accent); }
+  .mode-btn.active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 
   .scenarios { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 0 0 18px; }
-  .chip { border: 1px solid #334155; background: var(--panel); color: var(--text);
+  .chip { border: 1px solid var(--border-soft); background: var(--panel); color: var(--text);
     padding: 8px 14px; border-radius: 999px; cursor: pointer; font-size: 14px; transition: .15s; }
   .chip:hover { border-color: var(--accent); }
-  .chip.active { background: var(--accent); color: #052e3f; border-color: var(--accent); font-weight: 600; }
+  .chip.active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
 
-  .card { background: var(--panel); border: 1px solid #2b3a52; border-radius: var(--radius);
-    padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 22px; box-shadow: var(--shadow); }
   .progress { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
   .zh { color: var(--muted); font-size: 15px; margin-bottom: 6px; }
   .en { font-size: 26px; font-weight: 600; line-height: 1.35; margin-bottom: 4px; }
@@ -60,7 +88,7 @@
   .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
   button.btn { border: none; border-radius: 12px; padding: 12px 18px; font-size: 15px; cursor: pointer;
     color: #fff; display: inline-flex; align-items: center; gap: 8px; transition: .15s; font-weight: 600; }
-  .btn-play { background: var(--accent); color: #052e3f; }
+  .btn-play { background: var(--accent); color: var(--accent-ink); }
   .btn-rec  { background: var(--accent-2); }
   .btn-rec.recording { background: var(--danger); animation: pulse 1s infinite; }
   .btn-slow, .btn-nav { background: var(--panel-2); }
@@ -73,7 +101,7 @@
   .heard .label { color: var(--muted); font-size: 12px; display: block; margin-bottom: 4px; }
   .score-row { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
   .score-num { font-size: 34px; font-weight: 800; }
-  .score-bar { flex: 1; height: 10px; border-radius: 999px; background: #334155; overflow: hidden; }
+  .score-bar { flex: 1; height: 10px; border-radius: 999px; background: var(--border-soft); overflow: hidden; }
   .score-fill { height: 100%; width: 0; border-radius: 999px; transition: width .5s ease; }
   .diff { margin-top: 12px; font-size: 17px; line-height: 1.6; }
   .diff .ok { color: var(--accent-2); }
@@ -90,13 +118,15 @@
     align-items: center; justify-content: center; font-size: 20px; background: var(--panel-2); }
   .bubble { background: var(--panel-2); border-radius: 14px; padding: 10px 14px; max-width: 78%; }
   .turn.me .bubble { background: #0e7490; }
+  .turn.me .bubble, .turn.me .bubble .en, .turn.me .bubble .zh, .turn.me .bubble .mini { color: #f1f5f9; }
+  .turn.speaking .bubble { outline: 2px solid var(--accent); box-shadow: 0 0 0 4px rgba(56,189,248,.18); }
   .bubble .en { font-size: 17px; font-weight: 600; margin: 0; line-height: 1.4; }
-  .bubble .zh { font-size: 13px; margin: 4px 0 0; }
-  .bubble .mini { font-size: 12px; margin-top: 6px; color: #cbd5e1; }
-  .role-pick { display: flex; gap: 8px; justify-content: center; margin-bottom: 14px; }
+  .bubble .zh { font-size: 13px; margin: 4px 0 0; color: var(--muted); }
+  .bubble .mini { font-size: 12px; margin-top: 6px; color: var(--muted); }
+  .role-pick { display: flex; gap: 8px; justify-content: center; margin-bottom: 14px; flex-wrap: wrap; }
 
   /* 错题本 */
-  .mistake { background: var(--panel); border: 1px solid #2b3a52; border-radius: 12px;
+  .mistake { background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
     padding: 14px 16px; margin-bottom: 10px; }
   .mistake .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
   .mistake .en { font-size: 17px; margin: 0; }
@@ -106,9 +136,23 @@
   .row-actions { display: flex; gap: 8px; margin-top: 10px; }
   .mini-btn { border: none; border-radius: 8px; padding: 7px 12px; font-size: 13px; cursor: pointer;
     background: var(--panel-2); color: var(--text); font-weight: 600; }
-  .mini-btn.play { background: var(--accent); color: #052e3f; }
-  .mini-btn.del  { background: #3f1d1d; color: var(--danger); }
+  .mini-btn.play { background: var(--accent); color: var(--accent-ink); }
+  .mini-btn.del  { background: rgba(248,113,113,.15); color: var(--danger); }
   .empty { text-align: center; color: var(--muted); padding: 40px 16px; }
+
+  /* 编辑器 */
+  .editor-block { margin-bottom: 18px; }
+  .editor-block label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  .editor-block .hint { color: var(--muted); font-size: 12px; margin: 0 0 8px; }
+  .editor-block textarea {
+    width: 100%; min-height: 180px; resize: vertical; border-radius: 12px; padding: 12px;
+    background: var(--bg); color: var(--text); border: 1px solid var(--border-soft);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; line-height: 1.5;
+  }
+  .editor-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .editor-status { font-size: 13px; margin-top: 10px; min-height: 18px; }
+  .editor-status.ok { color: var(--accent-2); }
+  .editor-status.err { color: var(--danger); }
 
   /* 进度图 */
   #chart { width: 100%; overflow-x: auto; }
@@ -124,6 +168,7 @@
 </style>
 </head>
 <body>
+  <button id="themeBtn" class="theme-toggle" title="切换深色 / 浅色主题">🌙</button>
   <header>
     <h1>🗣️ 英语口语陪练</h1>
     <p>听标准发音 → 跟读 → 即时打分纠错 · 专为日常口语交流设计</p>
@@ -141,6 +186,7 @@
       <button class="mode-btn" data-mode="dialogue">💬 对话</button>
       <button class="mode-btn" data-mode="review">📒 错题本</button>
       <button class="mode-btn" data-mode="progress">📊 进度</button>
+      <button class="mode-btn" data-mode="editor">✏️ 编辑</button>
     </div>
 
     <div id="browserWarn" class="warn">
@@ -178,6 +224,7 @@
         <div class="controls">
           <button class="btn btn-play" id="dlgPlayBtn">▶️ 对方朗读</button>
           <button class="btn btn-rec" id="dlgRecBtn">🎤 轮到我说</button>
+          <button class="btn btn-slow" id="dlgPlayAllBtn">🔊 整段连读</button>
           <button class="btn btn-nav" id="dlgRestartBtn">↺ 重新开始</button>
         </div>
         <div class="result" id="dlgResult"></div>
@@ -202,6 +249,29 @@
       </div>
     </section>
 
+    <!-- ===== 自定义编辑 ===== -->
+    <section id="editorView" class="hidden">
+      <div class="card">
+        <div class="editor-block">
+          <label>📚 练习场景（JSON）</label>
+          <p class="hint">格式：<code>{ "场景名": [ {"en":"英文","zh":"中文"} ] }</code></p>
+          <textarea id="editData" spellcheck="false"></textarea>
+        </div>
+        <div class="editor-block">
+          <label>💬 对话剧本（JSON）</label>
+          <p class="hint">格式：<code>{ "对话名": {"roles":["角色A","角色B"], "turns":[{"role":0,"en":"...","zh":"..."}]} }</code>（role 为 0 或 1）</p>
+          <textarea id="editDialogues" spellcheck="false"></textarea>
+        </div>
+        <div class="editor-actions">
+          <button class="btn btn-play" id="saveEditBtn">💾 保存并应用</button>
+          <button class="btn btn-nav" id="resetEditBtn">↺ 恢复默认</button>
+          <button class="btn btn-nav" id="reloadEditBtn">↩︎ 重新载入当前内容</button>
+        </div>
+        <div class="editor-status" id="editStatus"></div>
+        <p class="hint" style="margin-top:12px">💡 自定义内容保存在本机浏览器；自定义句子中词典外的单词，音标处会显示「·」。</p>
+      </div>
+    </section>
+
     <div class="footer">
       纯网页 · 无需安装 · 无需联网 API · 数据仅存在你本机浏览器<br/>
       录音评分基于浏览器内置 <code>Web Speech API</code> ·
@@ -211,7 +281,7 @@
 
 <script>
 /* ================= 语料 ================= */
-const DATA = {
+const DEFAULT_DATA = {
   "打招呼 Greetings": [
     { en: "Hi, how's it going?", zh: "嗨，最近怎么样？" },
     { en: "It's nice to meet you.", zh: "很高兴认识你。" },
@@ -272,7 +342,7 @@ const DATA = {
 
 /* ================= 对话剧本 =================
    每段对话两个角色 A / B，用户可选扮演其中一方。 */
-const DIALOGUES = {
+const DEFAULT_DIALOGUES = {
   "咖啡店点单 At a Café": {
     roles: ["店员 Barista", "顾客 Customer"],
     turns: [
@@ -390,6 +460,39 @@ const LS = {
   set(k, v) { localStorage.setItem(k, JSON.stringify(v)); },
 };
 const todayStr = () => new Date().toISOString().slice(0, 10);
+
+/* 语料：优先使用用户自定义内容，否则用内置默认 */
+function validateData(obj) {
+  if (!obj || typeof obj !== "object" || Array.isArray(obj)) throw new Error("练习场景应是一个对象");
+  const keys = Object.keys(obj);
+  if (!keys.length) throw new Error("至少需要一个场景");
+  keys.forEach(k => {
+    if (!Array.isArray(obj[k]) || !obj[k].length) throw new Error(`场景「${k}」应是非空数组`);
+    obj[k].forEach((it, i) => {
+      if (!it || typeof it.en !== "string" || typeof it.zh !== "string" || !it.en.trim())
+        throw new Error(`场景「${k}」第 ${i + 1} 项需含 en 和 zh 文本`);
+    });
+  });
+  return obj;
+}
+function validateDialogues(obj) {
+  if (!obj || typeof obj !== "object" || Array.isArray(obj)) throw new Error("对话剧本应是一个对象");
+  const keys = Object.keys(obj);
+  if (!keys.length) throw new Error("至少需要一段对话");
+  keys.forEach(k => {
+    const d = obj[k];
+    if (!d || !Array.isArray(d.roles) || d.roles.length !== 2) throw new Error(`对话「${k}」需要 roles（两个角色）`);
+    if (!Array.isArray(d.turns) || !d.turns.length) throw new Error(`对话「${k}」需要非空 turns`);
+    d.turns.forEach((t, i) => {
+      if (!t || (t.role !== 0 && t.role !== 1) || typeof t.en !== "string" || typeof t.zh !== "string" || !t.en.trim())
+        throw new Error(`对话「${k}」第 ${i + 1} 句需含 role(0/1)、en、zh`);
+    });
+  });
+  return obj;
+}
+let DATA, DIALOGUES;
+try { DATA = validateData(LS.get("esc_custom_data", null)); } catch { DATA = DEFAULT_DATA; }
+try { DIALOGUES = validateDialogues(LS.get("esc_custom_dialogues", null)); } catch { DIALOGUES = DEFAULT_DIALOGUES; }
 
 function loadStreak() { return LS.get("esc_streak", { lastDate: "", count: 0, todayCount: 0 }); }
 function saveStreak(s) { LS.set("esc_streak", s); }
@@ -571,6 +674,9 @@ function renderRolePick() {
   });
 }
 function restartDialogue() {
+  playingAll = false; speakingIdx = -1;
+  if (synth) synth.cancel();
+  $("dlgPlayAllBtn").textContent = "🔊 整段连读";
   turnPos = 0;
   $("dlgResult").innerHTML = "";
   renderRolePick();
@@ -582,17 +688,20 @@ function renderTurns() {
   dlg().turns.forEach((t, i) => {
     const mine = t.role === myRole;
     const row = document.createElement("div");
-    row.className = "turn " + (mine ? "me " : "") + (i <= turnPos ? "active" : "");
-    const shown = i < turnPos || (i === turnPos && !mine);
+    const revealed = playingAll || i < turnPos || (i === turnPos && !mine);
+    const active = playingAll || i <= turnPos;
+    row.className = "turn " + (mine ? "me " : "") + (active ? "active" : "") + (playingAll && i === speakingIdx ? " speaking" : "");
     row.innerHTML = `
       <div class="avatar">${mine ? "🧑" : "🤖"}</div>
       <div class="bubble">
-        <p class="en">${shown ? t.en : (mine ? "🎤 轮到你说这句…" : "…")}</p>
-        ${shown ? `<p class="zh">${t.zh}</p><p class="mini">${ipaFor(t.en)}</p>` : (mine ? `<p class="zh">${t.zh}</p>` : "")}
+        <p class="en">${revealed ? t.en : (mine ? "🎤 轮到你说这句…" : "…")}</p>
+        ${revealed ? `<p class="zh">${t.zh}</p><p class="mini">${ipaFor(t.en)}</p>` : (mine ? `<p class="zh">${t.zh}</p>` : "")}
       </div>`;
     box.appendChild(row);
   });
-  $("dlgProgress").textContent = `${dlgKey} · 第 ${Math.min(turnPos + 1, dlg().turns.length)} / ${dlg().turns.length} 句`;
+  $("dlgProgress").textContent = playingAll
+    ? `${dlgKey} · 整段连读中…`
+    : `${dlgKey} · 第 ${Math.min(turnPos + 1, dlg().turns.length)} / ${dlg().turns.length} 句`;
 }
 /* 推进对话：若当前轮是对方的，自动朗读并前进；若是用户的，等待录音 */
 function advanceDialogue() {
@@ -610,8 +719,38 @@ function advanceDialogue() {
   } else {
     $("dlgRecBtn").disabled = true;
     $("dlgPlayBtn").disabled = false;
-    speak(t.en, 1, () => { turnPos++; advanceDialogue(); });
+    speak(t.en, 1, () => { if (playingAll) return; turnPos++; advanceDialogue(); });
   }
+}
+
+/* 整段连读回放：依次朗读全部台词（不改变练习进度） */
+let playingAll = false, speakingIdx = -1;
+function playWholeDialogue() {
+  if (playingAll) { stopPlayAll(false); return; }
+  playingAll = true; speakingIdx = -1;
+  $("dlgPlayAllBtn").textContent = "⏹ 停止连读";
+  $("dlgRecBtn").disabled = true; $("dlgPlayBtn").disabled = true; $("dlgRestartBtn").disabled = true;
+  $("dlgResult").innerHTML = `<div class="tip">🔊 整段连读中，跟着默念吧…</div>`;
+  let i = 0;
+  const step = () => {
+    if (!playingAll) return;
+    if (i >= dlg().turns.length) { stopPlayAll(true); return; }
+    speakingIdx = i; renderTurns();
+    speak(dlg().turns[i].en, 1, () => { i++; if (playingAll) setTimeout(step, 450); });
+  };
+  step();
+}
+function stopPlayAll(finished) {
+  playingAll = false; speakingIdx = -1;
+  if (synth) synth.cancel();
+  $("dlgPlayAllBtn").textContent = "🔊 整段连读";
+  $("dlgRestartBtn").disabled = false;
+  renderTurns();
+  $("dlgResult").innerHTML = finished
+    ? `<div class="tip">✅ 整段连读完毕。点「重新开始」自己练，或再听一遍。</div>` : "";
+  const t = dlg().turns[turnPos];
+  $("dlgRecBtn").disabled = !(t && t.role === myRole && srSupported);
+  $("dlgPlayBtn").disabled = !t;
 }
 function renderDlgResult(target, heard, err) {
   if (err) { $("dlgResult").innerHTML = `<div class="tip">⚠️ 录音出错：${err}。</div>`; return; }
@@ -630,7 +769,8 @@ function renderDlgResult(target, heard, err) {
 }
 $("dlgPlayBtn").onclick = () => { const t = dlg().turns[turnPos]; if (t) speak(t.en, 1); };
 $("dlgRecBtn").onclick = () => { const t = dlg().turns[turnPos]; if (t) record(t.en, (h, e) => renderDlgResult(t.en, h, e), $("dlgRecBtn")); };
-$("dlgRestartBtn").onclick = () => { $("dlgRecBtn").disabled = false; $("dlgPlayBtn").disabled = false; restartDialogue(); };
+$("dlgPlayAllBtn").onclick = playWholeDialogue;
+$("dlgRestartBtn").onclick = () => { if (playingAll) stopPlayAll(false); $("dlgRecBtn").disabled = false; $("dlgPlayBtn").disabled = false; restartDialogue(); };
 
 /* ================= 错题本 ================= */
 function renderMistakes() {
@@ -735,11 +875,14 @@ function setMode(mode) {
   $("dialogueView").classList.toggle("hidden", mode !== "dialogue");
   $("reviewView").classList.toggle("hidden", mode !== "review");
   $("progressView").classList.toggle("hidden", mode !== "progress");
+  $("editorView").classList.toggle("hidden", mode !== "editor");
+  if (playingAll) stopPlayAll(false);
   if (synth) synth.cancel();
   if (recognizing && recognition) recognition.stop();
   if (mode === "dialogue") { $("dlgRecBtn").disabled = false; $("dlgPlayBtn").disabled = false; restartDialogue(); }
   if (mode === "review") renderMistakes();
   if (mode === "progress") renderChart();
+  if (mode === "editor") loadEditor();
 }
 document.querySelectorAll(".mode-btn").forEach(b => b.onclick = () => setMode(b.dataset.mode));
 
@@ -753,7 +896,7 @@ document.addEventListener("keydown", (e) => {
 
 $("clearAll").onclick = (e) => {
   e.preventDefault();
-  if (confirm("确定要清空打卡记录、错题本和练习历史吗？此操作不可恢复。")) {
+  if (confirm("确定要清空打卡记录、错题本和练习历史吗？（自定义语料不受影响）此操作不可恢复。")) {
     localStorage.removeItem("esc_streak");
     localStorage.removeItem("esc_mistakes");
     localStorage.removeItem("esc_history");
@@ -761,7 +904,64 @@ $("clearAll").onclick = (e) => {
   }
 };
 
+/* ================= 自定义编辑 ================= */
+function loadEditor() {
+  $("editData").value = JSON.stringify(DATA, null, 2);
+  $("editDialogues").value = JSON.stringify(DIALOGUES, null, 2);
+  setEditStatus("", "");
+}
+function setEditStatus(msg, cls) {
+  const el = $("editStatus");
+  el.textContent = msg;
+  el.className = "editor-status" + (cls ? " " + cls : "");
+}
+function applyCorpus(newData, newDialogues, persist) {
+  DATA = newData; DIALOGUES = newDialogues;
+  if (persist) {
+    LS.set("esc_custom_data", DATA);
+    LS.set("esc_custom_dialogues", DIALOGUES);
+  }
+  // 重置当前选择，避免引用到已删除的场景
+  currentScene = Object.keys(DATA)[0];
+  index = 0;
+  dlgKey = Object.keys(DIALOGUES)[0];
+  myRole = 0;
+  renderScenes(); renderCard(); renderDialogScenes();
+}
+$("saveEditBtn").onclick = () => {
+  let d, g;
+  try { d = JSON.parse($("editData").value); } catch (e) { return setEditStatus("练习场景 JSON 解析失败：" + e.message, "err"); }
+  try { g = JSON.parse($("editDialogues").value); } catch (e) { return setEditStatus("对话剧本 JSON 解析失败：" + e.message, "err"); }
+  try { validateData(d); } catch (e) { return setEditStatus("练习场景格式错误：" + e.message, "err"); }
+  try { validateDialogues(g); } catch (e) { return setEditStatus("对话剧本格式错误：" + e.message, "err"); }
+  applyCorpus(d, g, true);
+  setEditStatus("✅ 已保存并应用，所有模式已更新。", "ok");
+};
+$("resetEditBtn").onclick = () => {
+  if (!confirm("恢复为内置默认语料？你的自定义内容会被清除。")) return;
+  localStorage.removeItem("esc_custom_data");
+  localStorage.removeItem("esc_custom_dialogues");
+  applyCorpus(DEFAULT_DATA, DEFAULT_DIALOGUES, false);
+  loadEditor();
+  setEditStatus("已恢复为默认语料。", "ok");
+};
+$("reloadEditBtn").onclick = () => { loadEditor(); setEditStatus("已重新载入当前生效的内容。", "ok"); };
+
+/* ================= 主题切换 ================= */
+function applyTheme(theme) {
+  const light = theme === "light";
+  document.body.classList.toggle("light", light);
+  $("themeBtn").textContent = light ? "☀️" : "🌙";
+  $("themeBtn").title = light ? "切换到深色主题" : "切换到浅色主题";
+}
+$("themeBtn").onclick = () => {
+  const next = document.body.classList.contains("light") ? "dark" : "light";
+  LS.set("esc_theme", next);
+  applyTheme(next);
+};
+
 /* ================= 初始化 ================= */
+applyTheme(LS.get("esc_theme", "dark"));
 if (!srSupported) $("browserWarn").style.display = "block";
 renderStats();
 renderScenes();
