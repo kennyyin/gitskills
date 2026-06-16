@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>英语口语陪练 · English Speaking Coach</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel-2: #273449;
+    --accent: #38bdf8;
+    --accent-2: #22c55e;
+    --danger: #f87171;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", Segoe UI, Roboto, sans-serif;
+    background: radial-gradient(1200px 600px at 50% -10%, #1e293b 0%, var(--bg) 60%);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  header {
+    text-align: center;
+    padding: 28px 16px 12px;
+  }
+  header h1 { margin: 0; font-size: 24px; letter-spacing: .5px; }
+  header p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+
+  .wrap { max-width: 760px; margin: 0 auto; padding: 16px; }
+
+  .scenarios {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+    margin: 8px 0 20px;
+  }
+  .chip {
+    border: 1px solid #334155; background: var(--panel); color: var(--text);
+    padding: 8px 14px; border-radius: 999px; cursor: pointer; font-size: 14px;
+    transition: .15s;
+  }
+  .chip:hover { border-color: var(--accent); }
+  .chip.active { background: var(--accent); color: #052e3f; border-color: var(--accent); font-weight: 600; }
+
+  .card {
+    background: var(--panel); border: 1px solid #2b3a52; border-radius: var(--radius);
+    padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.25);
+  }
+  .progress { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
+  .zh { color: var(--muted); font-size: 15px; margin-bottom: 6px; }
+  .en { font-size: 26px; font-weight: 600; line-height: 1.35; margin-bottom: 4px; }
+  .phon { color: var(--accent); font-size: 14px; margin-bottom: 18px; min-height: 18px; }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+  button.btn {
+    border: none; border-radius: 12px; padding: 12px 18px; font-size: 15px;
+    cursor: pointer; color: #fff; display: inline-flex; align-items: center; gap: 8px;
+    transition: .15s; font-weight: 600;
+  }
+  .btn-play { background: var(--accent); color: #052e3f; }
+  .btn-rec  { background: var(--accent-2); }
+  .btn-rec.recording { background: var(--danger); animation: pulse 1s infinite; }
+  .btn-slow { background: var(--panel-2); }
+  .btn-nav  { background: var(--panel-2); }
+  button.btn:hover { filter: brightness(1.08); }
+  button.btn:disabled { opacity: .45; cursor: not-allowed; }
+  @keyframes pulse { 0%,100%{ transform: scale(1);} 50%{ transform: scale(1.04);} }
+
+  .result { margin-top: 6px; min-height: 80px; }
+  .heard { background: var(--panel-2); border-radius: 12px; padding: 12px 14px; font-size: 16px; }
+  .heard .label { color: var(--muted); font-size: 12px; display: block; margin-bottom: 4px; }
+  .score-row { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
+  .score-num { font-size: 34px; font-weight: 800; }
+  .score-bar { flex: 1; height: 10px; border-radius: 999px; background: #334155; overflow: hidden; }
+  .score-fill { height: 100%; width: 0; border-radius: 999px; transition: width .5s ease; }
+  .diff { margin-top: 12px; font-size: 17px; line-height: 1.6; }
+  .diff .ok { color: var(--accent-2); }
+  .diff .miss { color: var(--danger); text-decoration: underline; text-underline-offset: 3px; }
+  .tip { color: var(--muted); font-size: 13px; margin-top: 10px; }
+
+  .nav { display: flex; justify-content: space-between; margin-top: 18px; }
+  .footer { text-align: center; color: var(--muted); font-size: 12px; padding: 24px 12px; }
+  .footer code { color: var(--accent); }
+  .warn { background: #422006; color: #fbbf24; border: 1px solid #854d0e;
+          padding: 10px 14px; border-radius: 12px; font-size: 13px; margin: 12px 0; display: none; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>🗣️ 英语口语陪练</h1>
+    <p>听标准发音 → 跟读 → 即时打分纠错。专为日常口语交流设计。</p>
+  </header>
+
+  <div class="wrap">
+    <div id="scenarios" class="scenarios"></div>
+
+    <div id="browserWarn" class="warn">
+      ⚠️ 你的浏览器不支持语音识别（录音打分）。请用 <b>Chrome</b> 或 <b>Edge</b> 桌面版打开本页面，即可使用完整功能。朗读功能仍可正常使用。
+    </div>
+
+    <div class="card">
+      <div class="progress" id="progress"></div>
+      <div class="zh" id="zh"></div>
+      <div class="en" id="en"></div>
+      <div class="phon" id="phon"></div>
+
+      <div class="controls">
+        <button class="btn btn-play" id="playBtn">🔊 标准发音</button>
+        <button class="btn btn-slow" id="slowBtn">🐢 慢速</button>
+        <button class="btn btn-rec" id="recBtn">🎤 点击跟读</button>
+      </div>
+
+      <div class="result" id="result"></div>
+
+      <div class="nav">
+        <button class="btn btn-nav" id="prevBtn">← 上一句</button>
+        <button class="btn btn-nav" id="nextBtn">下一句 →</button>
+      </div>
+    </div>
+
+    <div class="footer">
+      纯网页 · 无需安装 · 无需联网 API · 数据不离开你的浏览器<br/>
+      录音评分基于浏览器内置 <code>Web Speech API</code>。
+    </div>
+  </div>
+
+<script>
+/* ---------- 语料：按日常场景分组 ---------- */
+const DATA = {
+  "打招呼 Greetings": [
+    { en: "Hi, how's it going?", zh: "嗨，最近怎么样？" },
+    { en: "It's nice to meet you.", zh: "很高兴认识你。" },
+    { en: "Long time no see! How have you been?", zh: "好久不见！你最近过得怎么样？" },
+    { en: "Have a great day!", zh: "祝你今天愉快！" },
+  ],
+  "闲聊 Small Talk": [
+    { en: "The weather is really nice today.", zh: "今天天气真不错。" },
+    { en: "What do you do for fun?", zh: "你平时喜欢做什么消遣？" },
+    { en: "I'm just hanging out at home this weekend.", zh: "这个周末我就待在家里。" },
+    { en: "That sounds amazing! Tell me more.", zh: "听起来太棒了！再多说点。" },
+  ],
+  "餐厅 Restaurant": [
+    { en: "Could I see the menu, please?", zh: "可以给我看一下菜单吗？" },
+    { en: "I'll have the chicken, please.", zh: "我要一份鸡肉，谢谢。" },
+    { en: "Can we get the check, please?", zh: "可以结账吗？" },
+    { en: "Is this dish spicy?", zh: "这道菜辣吗？" },
+  ],
+  "问路 Directions": [
+    { en: "Excuse me, how do I get to the station?", zh: "打扰一下，请问车站怎么走？" },
+    { en: "Is it within walking distance?", zh: "走路能到吗？" },
+    { en: "Turn left at the next corner.", zh: "在下个路口左转。" },
+    { en: "Thanks for your help, I really appreciate it.", zh: "谢谢你的帮助，非常感激。" },
+  ],
+  "购物 Shopping": [
+    { en: "How much does this cost?", zh: "这个多少钱？" },
+    { en: "Do you have this in a larger size?", zh: "这件有大一号的吗？" },
+    { en: "I'm just looking, thanks.", zh: "我只是随便看看，谢谢。" },
+    { en: "Can I pay by card?", zh: "可以刷卡吗？" },
+  ],
+  "工作 At Work": [
+    { en: "Let's schedule a meeting for tomorrow.", zh: "我们安排明天开个会吧。" },
+    { en: "Could you send me that file?", zh: "你能把那个文件发给我吗？" },
+    { en: "I'll get back to you as soon as possible.", zh: "我会尽快回复你。" },
+    { en: "Great job on the presentation!", zh: "演示做得很棒！" },
+  ],
+};
+
+/* ---------- 状态 ---------- */
+let currentScene = Object.keys(DATA)[0];
+let index = 0;
+
+const $ = (id) => document.getElementById(id);
+const synth = window.speechSynthesis;
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const srSupported = !!SR;
+
+/* ---------- 渲染场景标签 ---------- */
+function renderScenes() {
+  const box = $("scenarios");
+  box.innerHTML = "";
+  Object.keys(DATA).forEach((name) => {
+    const c = document.createElement("div");
+    c.className = "chip" + (name === currentScene ? " active" : "");
+    c.textContent = name;
+    c.onclick = () => { currentScene = name; index = 0; renderScenes(); renderCard(); };
+    box.appendChild(c);
+  });
+}
+
+function sentences() { return DATA[currentScene]; }
+
+function renderCard() {
+  const list = sentences();
+  const item = list[index];
+  $("progress").textContent = `${currentScene} · 第 ${index + 1} / ${list.length} 句`;
+  $("zh").textContent = item.zh;
+  $("en").textContent = item.en;
+  $("phon").textContent = "";
+  $("result").innerHTML = "";
+  $("prevBtn").disabled = index === 0;
+  $("nextBtn").disabled = index === list.length - 1;
+  $("recBtn").disabled = !srSupported;
+}
+
+/* ---------- 朗读 (TTS) ---------- */
+function speak(text, rate) {
+  if (!synth) return;
+  synth.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US";
+  u.rate = rate;
+  synth.speak(u);
+}
+
+/* ---------- 评分逻辑 ---------- */
+function normalize(s) {
+  return s.toLowerCase().replace(/[^a-z0-9'\s]/g, " ").replace(/\s+/g, " ").trim();
+}
+function scoreSpeech(target, heard) {
+  const t = normalize(target).split(" ").filter(Boolean);
+  const h = normalize(heard).split(" ").filter(Boolean);
+  const heardSet = {};
+  h.forEach(w => heardSet[w] = (heardSet[w] || 0) + 1);
+  const used = {};
+  const marks = t.map(word => {
+    if (heardSet[word] && (used[word] || 0) < heardSet[word]) {
+      used[word] = (used[word] || 0) + 1;
+      return { word, ok: true };
+    }
+    return { word, ok: false };
+  });
+  const correct = marks.filter(m => m.ok).length;
+  const score = t.length ? Math.round((correct / t.length) * 100) : 0;
+  return { score, marks };
+}
+
+function colorFor(score) {
+  if (score >= 85) return "#22c55e";
+  if (score >= 60) return "#facc15";
+  return "#f87171";
+}
+function feedbackFor(score) {
+  if (score >= 90) return "🎉 太棒了，发音非常清晰！";
+  if (score >= 75) return "👍 不错！再注意一下标红的词。";
+  if (score >= 50) return "💪 有进步，跟着标准发音再练几遍。";
+  return "🔁 没关系，先点「标准发音」听一听，再慢速跟读。";
+}
+
+function renderResult(target, heard) {
+  const { score, marks } = scoreSpeech(target, heard);
+  const diffHtml = marks
+    .map(m => `<span class="${m.ok ? "ok" : "miss"}">${m.word}</span>`)
+    .join(" ");
+  $("result").innerHTML = `
+    <div class="heard"><span class="label">识别到你说的：</span>${heard || "（没听清）"}</div>
+    <div class="score-row">
+      <div class="score-num" style="color:${colorFor(score)}">${score}</div>
+      <div class="score-bar"><div class="score-fill" style="background:${colorFor(score)}"></div></div>
+    </div>
+    <div class="diff">${diffHtml}</div>
+    <div class="tip">${feedbackFor(score)}</div>
+  `;
+  requestAnimationFrame(() => {
+    $("result").querySelector(".score-fill").style.width = score + "%";
+  });
+}
+
+/* ---------- 语音识别 (STT) ---------- */
+let recognizing = false;
+let recognition = null;
+function startRecognition() {
+  if (!srSupported) return;
+  if (recognizing) { recognition && recognition.stop(); return; }
+  recognition = new SR();
+  recognition.lang = "en-US";
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  recognition.onstart = () => {
+    recognizing = true;
+    $("recBtn").classList.add("recording");
+    $("recBtn").textContent = "🔴 正在听… 点击停止";
+  };
+  recognition.onerror = (e) => {
+    $("result").innerHTML = `<div class="tip">⚠️ 录音出错：${e.error}。请检查麦克风权限。</div>`;
+  };
+  recognition.onend = () => {
+    recognizing = false;
+    $("recBtn").classList.remove("recording");
+    $("recBtn").textContent = "🎤 点击跟读";
+  };
+  recognition.onresult = (e) => {
+    const heard = e.results[0][0].transcript;
+    renderResult(sentences()[index].en, heard);
+  };
+  recognition.start();
+}
+
+/* ---------- 事件绑定 ---------- */
+$("playBtn").onclick = () => speak(sentences()[index].en, 1);
+$("slowBtn").onclick = () => speak(sentences()[index].en, 0.6);
+$("recBtn").onclick = startRecognition;
+$("prevBtn").onclick = () => { if (index > 0) { index--; renderCard(); } };
+$("nextBtn").onclick = () => { if (index < sentences().length - 1) { index++; renderCard(); } };
+
+document.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "INPUT") return;
+  if (e.code === "Space") { e.preventDefault(); $("playBtn").click(); }
+  if (e.code === "ArrowRight") $("nextBtn").click();
+  if (e.code === "ArrowLeft") $("prevBtn").click();
+  if (e.key.toLowerCase() === "r") $("recBtn").click();
+});
+
+/* ---------- 初始化 ---------- */
+if (!srSupported) $("browserWarn").style.display = "block";
+renderScenes();
+renderCard();
+</script>
+</body>
+</html>
