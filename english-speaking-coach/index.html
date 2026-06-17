@@ -603,13 +603,40 @@ const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 const srSupported = !!SR;
 const MISTAKE_THRESHOLD = 70;
 
+/* 语音列表在移动端是异步加载的，先缓存并在变化时刷新 */
+let cachedVoices = [];
+function refreshVoices() { if (synth) cachedVoices = synth.getVoices() || []; }
+if (synth) {
+  refreshVoices();
+  try { synth.addEventListener("voiceschanged", refreshVoices); } catch (e) {}
+}
+function pickEnVoice() {
+  const vs = (cachedVoices && cachedVoices.length) ? cachedVoices : (synth ? (synth.getVoices() || []) : []);
+  return vs.find(v => /en[-_]US/i.test(v.lang))
+      || vs.find(v => /^en/i.test(v.lang))
+      || null;
+}
 function speak(text, rate, cb) {
   if (!synth) { cb && cb(); return; }
-  synth.cancel();
+  // 仅在确有内容播放时才 cancel，避免安卓 Chrome 上 cancel 紧接 speak 的静默 bug
+  if (synth.speaking || synth.pending) { try { synth.cancel(); } catch (e) {} }
   const u = new SpeechSynthesisUtterance(text);
   u.lang = "en-US"; u.rate = rate;
   if (cb) u.onend = cb;
-  synth.speak(u);
+  const go = () => {
+    const v = pickEnVoice(); if (v) u.voice = v;
+    synth.speak(u);
+    if (synth.paused) { try { synth.resume(); } catch (e) {} }
+  };
+  // 安卓首次点击时 voices 可能尚未就绪，等待一次再播（并设超时兜底）
+  if (!cachedVoices.length && (!synth.getVoices || synth.getVoices().length === 0)) {
+    let done = false;
+    const once = () => { if (done) return; done = true; refreshVoices(); go(); };
+    try { synth.addEventListener("voiceschanged", once, { once: true }); } catch (e) {}
+    setTimeout(once, 300);
+  } else {
+    go();
+  }
 }
 
 function normalize(s) {

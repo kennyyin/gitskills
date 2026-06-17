@@ -3,7 +3,6 @@ name: Deploy English Coach to GitHub Pages
 on:
   push:
     branches:
-      - claude/english-learning-tools-ilvw2n
       - master
   workflow_dispatch:
 
