@@ -237,6 +237,9 @@
       <button class="mode-btn" data-mode="editor">✏️ 编辑</button>
     </div>
 
+    <div id="ttsWarn" class="warn">
+      🔊 当前浏览器不支持「标准发音」（语音合成）。这是浏览器本身的限制——请改用 <b>Chrome</b> 或 <b>UC 浏览器</b> 打开本页面即可发声。
+    </div>
     <div id="browserWarn" class="warn">
       ⚠️ 你的浏览器不支持语音识别（录音打分）。请用 <b>Chrome</b> 或 <b>Edge</b> 桌面版打开本页面，即可使用完整功能。朗读功能仍可正常使用。
     </div>
@@ -1275,6 +1278,18 @@ $("themeBtn").onclick = () => {
 /* ================= 初始化 ================= */
 applyTheme(LS.get("esc_theme", "dark"));
 if (!srSupported) $("browserWarn").style.display = "block";
+
+/* 朗读（TTS）能力检测：不支持时给出友好提示 */
+function setTtsWarn(show) { $("ttsWarn").style.display = show ? "block" : "none"; }
+if (!synth) {
+  setTtsWarn(true); // 浏览器完全没有语音合成 API
+} else {
+  // 部分内置/国产浏览器有 API 却没有语音引擎：等语音列表，到时仍为空才提示
+  const onVoices = () => { refreshVoices(); if (cachedVoices.length) setTtsWarn(false); };
+  try { synth.addEventListener("voiceschanged", onVoices); } catch (e) {}
+  setTimeout(() => { refreshVoices(); if (!cachedVoices.length) setTtsWarn(true); }, 2000);
+}
+
 renderStats();
 renderScenes();
 renderCard();
