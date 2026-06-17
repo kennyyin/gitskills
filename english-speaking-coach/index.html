@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>英语口语陪练 · English Speaking Coach</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --bg2: #1e293b;
+    --panel: #1e293b;
+    --panel-2: #273449;
+    --border: #2b3a52;
+    --border-soft: #334155;
+    --accent: #38bdf8;
+    --accent-ink: #052e3f;
+    --accent-2: #22c55e;
+    --gold: #facc15;
+    --danger: #f87171;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --radius: 16px;
+    --shadow: 0 10px 30px rgba(0,0,0,.25);
+  }
+  body.light {
+    --bg: #eef2f7;
+    --bg2: #dbe4ee;
+    --panel: #ffffff;
+    --panel-2: #eef2f7;
+    --border: #d8e0ea;
+    --border-soft: #cbd5e1;
+    --accent: #0284c7;
+    --accent-ink: #ffffff;
+    --accent-2: #16a34a;
+    --gold: #d97706;
+    --danger: #dc2626;
+    --text: #0f172a;
+    --muted: #64748b;
+    --shadow: 0 10px 30px rgba(15,23,42,.10);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", Segoe UI, Roboto, sans-serif;
+    background: radial-gradient(1200px 600px at 50% -10%, var(--bg2) 0%, var(--bg) 60%);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    transition: background .3s, color .3s;
+  }
+  .theme-toggle {
+    position: fixed; top: 14px; right: 14px; z-index: 20;
+    width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+    border: 1px solid var(--border); background: var(--panel); color: var(--text);
+    font-size: 18px; box-shadow: var(--shadow);
+  }
+  header { text-align: center; padding: 26px 16px 6px; }
+  header h1 { margin: 0; font-size: 24px; letter-spacing: .5px; }
+  header p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+
+  .wrap { max-width: 780px; margin: 0 auto; padding: 16px; }
+
+  /* 顶部统计条 */
+  .stats { display: flex; gap: 10px; justify-content: center; margin: 12px 0 18px; flex-wrap: wrap; }
+  .stat { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 10px 16px; text-align: center; min-width: 96px; }
+  .stat b { display: block; font-size: 22px; color: var(--accent); }
+  .stat span { font-size: 12px; color: var(--muted); }
+
+  /* 模式切换 */
+  .modes { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .mode-btn { flex: 0 0 auto; border: 1px solid var(--border-soft); background: var(--panel); color: var(--text);
+    padding: 9px 18px; border-radius: 999px; cursor: pointer; font-size: 14px; transition: .15s; font-weight: 600; }
+  .mode-btn.active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+  .scenarios { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 0 0 18px; }
+  .chip { border: 1px solid var(--border-soft); background: var(--panel); color: var(--text);
+    padding: 8px 14px; border-radius: 999px; cursor: pointer; font-size: 14px; transition: .15s; }
+  .chip:hover { border-color: var(--accent); }
+  .chip.active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 22px; box-shadow: var(--shadow); }
+  .progress { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
+  .zh { color: var(--muted); font-size: 15px; margin-bottom: 6px; }
+  .en { font-size: 26px; font-weight: 600; line-height: 1.35; margin-bottom: 4px; }
+  .phon { color: var(--accent); font-size: 14px; margin-bottom: 18px; min-height: 4px; }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+  button.btn { border: none; border-radius: 12px; padding: 12px 18px; font-size: 15px; cursor: pointer;
+    color: #fff; display: inline-flex; align-items: center; gap: 8px; transition: .15s; font-weight: 600; }
+  .btn-play { background: var(--accent); color: var(--accent-ink); }
+  .btn-rec  { background: var(--accent-2); }
+  .btn-rec.recording { background: var(--danger); animation: pulse 1s infinite; }
+  .btn-slow, .btn-nav { background: var(--panel-2); }
+  button.btn:hover { filter: brightness(1.08); }
+  button.btn:disabled { opacity: .45; cursor: not-allowed; }
+  @keyframes pulse { 0%,100%{ transform: scale(1);} 50%{ transform: scale(1.04);} }
+
+  .result { margin-top: 6px; min-height: 10px; }
+  .heard { background: var(--panel-2); border-radius: 12px; padding: 12px 14px; font-size: 16px; }
+  .heard .label { color: var(--muted); font-size: 12px; display: block; margin-bottom: 4px; }
+  .score-row { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
+  .score-num { font-size: 34px; font-weight: 800; }
+  .score-bar { flex: 1; height: 10px; border-radius: 999px; background: var(--border-soft); overflow: hidden; }
+  .score-fill { height: 100%; width: 0; border-radius: 999px; transition: width .5s ease; }
+  .diff { margin-top: 12px; font-size: 17px; line-height: 1.6; }
+  .diff .ok { color: var(--accent-2); }
+  .diff .miss { color: var(--danger); text-decoration: underline; text-underline-offset: 3px; }
+  .tip { color: var(--muted); font-size: 13px; margin-top: 10px; }
+  .nav { display: flex; justify-content: space-between; margin-top: 18px; }
+
+  /* 对话模式 */
+  .turns { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+  .turn { display: flex; gap: 10px; align-items: flex-start; opacity: .35; transition: .25s; }
+  .turn.active { opacity: 1; }
+  .turn.me { flex-direction: row-reverse; }
+  .avatar { width: 40px; height: 40px; border-radius: 50%; flex: 0 0 40px; display: flex;
+    align-items: center; justify-content: center; font-size: 20px; background: var(--panel-2); }
+  .bubble { background: var(--panel-2); border-radius: 14px; padding: 10px 14px; max-width: 78%; }
+  .turn.me .bubble { background: #0e7490; }
+  .turn.me .bubble, .turn.me .bubble .en, .turn.me .bubble .zh, .turn.me .bubble .mini { color: #f1f5f9; }
+  .turn.speaking .bubble { outline: 2px solid var(--accent); box-shadow: 0 0 0 4px rgba(56,189,248,.18); }
+  .bubble .en { font-size: 17px; font-weight: 600; margin: 0; line-height: 1.4; }
+  .bubble .zh { font-size: 13px; margin: 4px 0 0; color: var(--muted); }
+  .bubble .mini { font-size: 12px; margin-top: 6px; color: var(--muted); }
+  .role-pick { display: flex; gap: 8px; justify-content: center; margin-bottom: 14px; flex-wrap: wrap; }
+
+  /* 错题本 */
+  .mistake { background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 10px; }
+  .mistake .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .mistake .en { font-size: 17px; margin: 0; }
+  .mistake .zh { font-size: 13px; margin: 4px 0 0; }
+  .mistake .meta { font-size: 12px; color: var(--muted); }
+  .badge { font-size: 13px; font-weight: 800; padding: 3px 10px; border-radius: 999px; color: #052e3f; }
+  .row-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .mini-btn { border: none; border-radius: 8px; padding: 7px 12px; font-size: 13px; cursor: pointer;
+    background: var(--panel-2); color: var(--text); font-weight: 600; }
+  .mini-btn.play { background: var(--accent); color: var(--accent-ink); }
+  .mini-btn.del  { background: rgba(248,113,113,.15); color: var(--danger); }
+  .empty { text-align: center; color: var(--muted); padding: 40px 16px; }
+
+  /* 编辑器 */
+  .editor-block { margin-bottom: 18px; }
+  .editor-block label { display: block; font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+  .editor-block .hint { color: var(--muted); font-size: 12px; margin: 0 0 8px; }
+  .editor-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .editor-status { font-size: 13px; margin-top: 10px; min-height: 18px; }
+  .editor-status.ok { color: var(--accent-2); }
+  .editor-status.err { color: var(--danger); }
+  .f-input { background: var(--bg); color: var(--text); border: 1px solid var(--border-soft);
+    border-radius: 8px; padding: 8px 10px; font-size: 14px; font-family: inherit; }
+  .f-input:focus { outline: none; border-color: var(--accent); }
+  .edit-card { background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px; margin-bottom: 12px; }
+  .edit-head { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .edit-head .name { flex: 1; font-weight: 600; }
+  .edit-roles { display: flex; gap: 8px; margin-bottom: 10px; }
+  .edit-roles .f-input { flex: 1; }
+  .edit-row { display: flex; gap: 8px; margin-bottom: 6px; align-items: center; }
+  .edit-row .en { flex: 1.3; } .edit-row .zh { flex: 1; }
+  .edit-row select.f-input { flex: 0 0 auto; }
+  .btn-x { border: none; cursor: pointer; border-radius: 8px; padding: 8px 10px; font-size: 13px;
+    font-weight: 700; background: rgba(248,113,113,.15); color: var(--danger); flex: 0 0 auto; }
+  .btn-icon { border: 1px solid var(--border-soft); cursor: pointer; border-radius: 8px; padding: 8px 10px;
+    font-size: 13px; background: var(--panel); color: var(--text); flex: 0 0 auto; }
+  .btn-icon:hover { border-color: var(--accent); }
+  .btn-add { border: 1px dashed var(--border-soft); background: transparent; color: var(--accent);
+    cursor: pointer; border-radius: 8px; padding: 7px 12px; font-size: 13px; font-weight: 600; margin-top: 4px; }
+  .drag-handle { cursor: grab; user-select: none; color: var(--muted); font-size: 17px; padding: 0 2px; flex: 0 0 auto; line-height: 1; }
+  .drag-handle:active { cursor: grabbing; }
+  .edit-row.dragover { outline: 2px dashed var(--accent); outline-offset: 2px; border-radius: 8px; }
+
+  /* 整段连读字幕 */
+  .subtitle { position: sticky; top: 8px; z-index: 5; background: var(--accent); color: var(--accent-ink);
+    border-radius: 12px; padding: 12px 16px; margin-bottom: 12px; text-align: center; box-shadow: var(--shadow); }
+  .subtitle .s-en { font-size: 18px; font-weight: 700; line-height: 1.3; }
+  .subtitle .s-zh { font-size: 13px; margin-top: 4px; opacity: .92; }
+
+  /* 进度图 */
+  #chart { width: 100%; overflow-x: auto; }
+  #chart svg { display: block; width: 100%; height: auto; }
+  .chart-legend { display: flex; gap: 18px; justify-content: center; margin-top: 12px; font-size: 13px; color: var(--muted); }
+  .chart-legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: middle; }
+
+  .footer { text-align: center; color: var(--muted); font-size: 12px; padding: 24px 12px; }
+  .footer code { color: var(--accent); }
+  .warn { background: #422006; color: #fbbf24; border: 1px solid #854d0e;
+    padding: 10px 14px; border-radius: 12px; font-size: 13px; margin: 12px 0; display: none; }
+  .hidden { display: none !important; }
+
+  /* 窄屏 / 手机适配 */
+  @media (max-width: 600px) {
+    .wrap { padding: 12px; }
+    header { padding: 20px 48px 4px; }
+    header h1 { font-size: 20px; }
+    header p { font-size: 13px; }
+    .theme-toggle { top: 10px; right: 10px; width: 36px; height: 36px; font-size: 16px; }
+    .stat { min-width: 0; flex: 1; padding: 8px 6px; }
+    .stat b { font-size: 18px; }
+    .card { padding: 16px; }
+    .en { font-size: 22px; }
+    button.btn { padding: 11px 14px; font-size: 14px; flex: 1 1 auto; justify-content: center; }
+    .controls { gap: 8px; }
+    .nav .btn { flex: 1 1 auto; }
+    .bubble { max-width: 86%; }
+    .subtitle .s-en { font-size: 16px; }
+    /* 编辑器：每行的英文/中文换行占满，按钮成组 */
+    .edit-row { flex-wrap: wrap; }
+    .edit-row .en, .edit-row .zh { flex: 1 1 100%; }
+    .edit-roles { flex-wrap: wrap; }
+    .edit-roles .f-input { flex: 1 1 100%; }
+    .btn-icon, .btn-x { padding: 8px 12px; }
+    .editor-actions .btn { flex: 1 1 100%; }
+  }
+</style>
+</head>
+<body>
+  <button id="themeBtn" class="theme-toggle" title="切换深色 / 浅色主题">🌙</button>
+  <header>
+    <h1>🗣️ 英语口语陪练</h1>
+    <p>听标准发音 → 跟读 → 即时打分纠错 · 专为日常口语交流设计</p>
+  </header>
+
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat"><b id="stStreak">0</b><span>连续打卡(天)</span></div>
+      <div class="stat"><b id="stToday">0</b><span>今日练习(句)</span></div>
+      <div class="stat"><b id="stMistakes">0</b><span>错题本(句)</span></div>
+    </div>
+
+    <div class="modes">
+      <button class="mode-btn active" data-mode="practice">📚 练习</button>
+      <button class="mode-btn" data-mode="dialogue">💬 对话</button>
+      <button class="mode-btn" data-mode="review">📒 错题本</button>
+      <button class="mode-btn" data-mode="progress">📊 进度</button>
+      <button class="mode-btn" data-mode="editor">✏️ 编辑</button>
+    </div>
+
+    <div id="browserWarn" class="warn">
+      ⚠️ 你的浏览器不支持语音识别（录音打分）。请用 <b>Chrome</b> 或 <b>Edge</b> 桌面版打开本页面，即可使用完整功能。朗读功能仍可正常使用。
+    </div>
+
+    <!-- ===== 练习模式 ===== -->
+    <section id="practiceView">
+      <div id="scenarios" class="scenarios"></div>
+      <div class="card">
+        <div class="progress" id="progress"></div>
+        <div class="zh" id="zh"></div>
+        <div class="en" id="en"></div>
+        <div class="phon" id="phon"></div>
+        <div class="controls">
+          <button class="btn btn-play" id="playBtn">🔊 标准发音</button>
+          <button class="btn btn-slow" id="slowBtn">🐢 慢速</button>
+          <button class="btn btn-rec" id="recBtn">🎤 点击跟读</button>
+        </div>
+        <div class="result" id="result"></div>
+        <div class="nav">
+          <button class="btn btn-nav" id="prevBtn">← 上一句</button>
+          <button class="btn btn-nav" id="nextBtn">下一句 →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 对话模式 ===== -->
+    <section id="dialogueView" class="hidden">
+      <div id="dialogScenes" class="scenarios"></div>
+      <div class="role-pick" id="rolePick"></div>
+      <div class="card">
+        <div class="progress" id="dlgProgress"></div>
+        <div id="dlgSubtitle" class="subtitle hidden"></div>
+        <div class="turns" id="turns"></div>
+        <div class="controls">
+          <button class="btn btn-play" id="dlgPlayBtn">▶️ 对方朗读</button>
+          <button class="btn btn-rec" id="dlgRecBtn">🎤 轮到我说</button>
+          <button class="btn btn-slow" id="dlgPlayAllBtn">🔊 整段连读</button>
+          <button class="btn btn-nav" id="dlgRestartBtn">↺ 重新开始</button>
+        </div>
+        <div class="result" id="dlgResult"></div>
+      </div>
+    </section>
+
+    <!-- ===== 错题本 ===== -->
+    <section id="reviewView" class="hidden">
+      <div id="mistakeList"></div>
+    </section>
+
+    <!-- ===== 进度 ===== -->
+    <section id="progressView" class="hidden">
+      <div class="card">
+        <div class="progress">最近 14 天练习曲线</div>
+        <div id="chart"></div>
+        <div class="chart-legend">
+          <span><i style="background:var(--accent)"></i>每日练习句数（柱）</span>
+          <span><i style="background:var(--gold)"></i>平均得分（折线 0–100）</span>
+        </div>
+        <div id="chartSummary" class="tip"></div>
+      </div>
+    </section>
+
+    <!-- ===== 自定义编辑 ===== -->
+    <section id="editorView" class="hidden">
+      <div class="card">
+        <div class="editor-block">
+          <label>📚 练习场景</label>
+          <p class="hint">填写场景名与每句的英文 / 中文，无需写 JSON。</p>
+          <div id="dataEditor"></div>
+          <button class="btn-add" id="addSceneBtn">＋ 添加场景</button>
+        </div>
+        <div class="editor-block">
+          <label>💬 对话剧本</label>
+          <p class="hint">填写对话名、两个角色名，以及每句的说话人（角色1/2）与英文、中文。</p>
+          <div id="dlgEditor"></div>
+          <button class="btn-add" id="addDlgBtn">＋ 添加对话</button>
+        </div>
+        <div class="editor-actions">
+          <button class="btn btn-play" id="saveEditBtn">💾 保存并应用</button>
+          <button class="btn btn-nav" id="printBtn">🖨️ 打印 / PDF 清单</button>
+          <button class="btn btn-nav" id="exportBtn">⬇️ 导出 JSON</button>
+          <button class="btn btn-nav" id="importBtn">⬆️ 导入 JSON</button>
+          <button class="btn btn-nav" id="resetEditBtn">↺ 恢复默认</button>
+          <input type="file" id="importFile" accept="application/json,.json" hidden />
+        </div>
+        <div class="editor-status" id="editStatus"></div>
+        <p class="hint" style="margin-top:12px">💡 自定义内容保存在本机浏览器；导出可备份/分享，导入后需点「保存并应用」。词典外的单词音标处显示「·」。</p>
+      </div>
+    </section>
+
+    <div class="footer">
+      纯网页 · 无需安装 · 无需联网 API · 数据仅存在你本机浏览器<br/>
+      录音评分基于浏览器内置 <code>Web Speech API</code> ·
+      <a href="#" id="clearAll" style="color:var(--muted)">清空本地数据</a>
+    </div>
+  </div>
+
+<script>
+/* ================= 语料 ================= */
+const DEFAULT_DATA = {
+  "打招呼 Greetings": [
+    { en: "Hi, how's it going?", zh: "嗨，最近怎么样？" },
+    { en: "It's nice to meet you.", zh: "很高兴认识你。" },
+    { en: "Long time no see! How have you been?", zh: "好久不见！你最近过得怎么样？" },
+    { en: "What have you been up to lately?", zh: "你最近都在忙些什么？" },
+    { en: "Have a great day!", zh: "祝你今天愉快！" },
+    { en: "Take care, see you soon.", zh: "保重，回头见。" },
+  ],
+  "闲聊 Small Talk": [
+    { en: "The weather is really nice today.", zh: "今天天气真不错。" },
+    { en: "What do you do for fun?", zh: "你平时喜欢做什么消遣？" },
+    { en: "I'm just hanging out at home this weekend.", zh: "这个周末我就待在家里。" },
+    { en: "That sounds amazing! Tell me more.", zh: "听起来太棒了！再多说点。" },
+    { en: "By the way, did you watch the game last night?", zh: "对了，你看了昨晚的比赛吗？" },
+    { en: "I totally agree with you.", zh: "我完全同意你的看法。" },
+  ],
+  "餐厅 Restaurant": [
+    { en: "Could I see the menu, please?", zh: "可以给我看一下菜单吗？" },
+    { en: "I'll have the chicken, please.", zh: "我要一份鸡肉，谢谢。" },
+    { en: "Is this dish spicy?", zh: "这道菜辣吗？" },
+    { en: "Can I get a glass of water?", zh: "可以给我一杯水吗？" },
+    { en: "Can we get the check, please?", zh: "可以结账吗？" },
+    { en: "Everything was delicious, thank you.", zh: "都很好吃，谢谢。" },
+  ],
+  "问路 Directions": [
+    { en: "Excuse me, how do I get to the station?", zh: "打扰一下，请问车站怎么走？" },
+    { en: "Is it within walking distance?", zh: "走路能到吗？" },
+    { en: "Which way is the nearest subway?", zh: "最近的地铁站往哪个方向？" },
+    { en: "Turn left at the next corner.", zh: "在下个路口左转。" },
+    { en: "It's just around the corner.", zh: "就在拐角那儿。" },
+    { en: "Thanks for your help, I really appreciate it.", zh: "谢谢你的帮助，非常感激。" },
+  ],
+  "购物 Shopping": [
+    { en: "How much does this cost?", zh: "这个多少钱？" },
+    { en: "Do you have this in a larger size?", zh: "这件有大一号的吗？" },
+    { en: "Can I try this on?", zh: "我可以试穿一下吗？" },
+    { en: "I'm just looking, thanks.", zh: "我只是随便看看，谢谢。" },
+    { en: "Do you take credit cards?", zh: "你们收信用卡吗？" },
+    { en: "Could I get a receipt, please?", zh: "可以给我一张收据吗？" },
+  ],
+  "工作 At Work": [
+    { en: "Let's schedule a meeting for tomorrow.", zh: "我们安排明天开个会吧。" },
+    { en: "Could you send me that file?", zh: "你能把那个文件发给我吗？" },
+    { en: "I'll get back to you as soon as possible.", zh: "我会尽快回复你。" },
+    { en: "Can we go over this together?", zh: "我们能一起过一遍这个吗？" },
+    { en: "Great job on the presentation!", zh: "演示做得很棒！" },
+    { en: "Let me know if you have any questions.", zh: "有任何问题随时告诉我。" },
+  ],
+  "旅行 Travel": [
+    { en: "I'd like to check in, please.", zh: "我想办理入住，谢谢。" },
+    { en: "What time is checkout?", zh: "几点退房？" },
+    { en: "Could you call me a taxi?", zh: "能帮我叫辆出租车吗？" },
+    { en: "How long does the flight take?", zh: "飞行大概要多久？" },
+    { en: "Is breakfast included?", zh: "含早餐吗？" },
+    { en: "Could you recommend a good place to eat nearby?", zh: "你能推荐附近好吃的地方吗？" },
+  ],
+};
+
+/* ================= 对话剧本 =================
+   每段对话两个角色 A / B，用户可选扮演其中一方。 */
+const DEFAULT_DIALOGUES = {
+  "咖啡店点单 At a Café": {
+    roles: ["店员 Barista", "顾客 Customer"],
+    turns: [
+      { role: 0, en: "Hi there! What can I get for you?", zh: "你好！想喝点什么？" },
+      { role: 1, en: "Hi, I'd like a medium latte, please.", zh: "你好，我要一杯中杯拿铁。" },
+      { role: 0, en: "Sure. Would you like anything to eat?", zh: "好的。需要来点吃的吗？" },
+      { role: 1, en: "Yes, a chocolate muffin, please.", zh: "好的，要一个巧克力玛芬。" },
+      { role: 0, en: "That'll be six dollars. For here or to go?", zh: "一共六美元。在这儿喝还是带走？" },
+      { role: 1, en: "To go, please. Here's my card.", zh: "带走，谢谢。这是我的卡。" },
+    ],
+  },
+  "初次见面 Meeting Someone": {
+    roles: ["你 You", "新同事 Coworker"],
+    turns: [
+      { role: 1, en: "Hi, you must be the new intern. I'm Alex.", zh: "嗨，你一定是新来的实习生吧。我是 Alex。" },
+      { role: 0, en: "Hi Alex, nice to meet you. I'm Sam.", zh: "嗨 Alex，很高兴认识你。我是 Sam。" },
+      { role: 1, en: "Welcome aboard! How was your first day?", zh: "欢迎加入！第一天感觉怎么样？" },
+      { role: 0, en: "It's been great, everyone is so friendly.", zh: "挺好的，大家都很友善。" },
+      { role: 1, en: "Glad to hear that. Let me know if you need anything.", zh: "很高兴听你这么说。有需要尽管找我。" },
+      { role: 0, en: "Thanks, I really appreciate it.", zh: "谢谢，非常感激。" },
+    ],
+  },
+  "问路 Asking Directions": {
+    roles: ["游客 Tourist", "路人 Local"],
+    turns: [
+      { role: 0, en: "Excuse me, how do I get to the museum?", zh: "打扰一下，请问博物馆怎么走？" },
+      { role: 1, en: "Sure! Go straight and turn right at the bank.", zh: "好的！直走，在银行那儿右转。" },
+      { role: 0, en: "Is it far from here?", zh: "离这儿远吗？" },
+      { role: 1, en: "No, it's about a five-minute walk.", zh: "不远，大概走五分钟。" },
+      { role: 0, en: "Great, thank you so much!", zh: "太好了，非常感谢！" },
+      { role: 1, en: "You're welcome. Enjoy your visit!", zh: "不客气，玩得开心！" },
+    ],
+  },
+  "餐厅就餐 At a Restaurant": {
+    roles: ["服务员 Waiter", "顾客 Customer"],
+    turns: [
+      { role: 0, en: "Good evening! Do you have a reservation?", zh: "晚上好！您有预订吗？" },
+      { role: 1, en: "Yes, a table for two, please.", zh: "有的，两位，谢谢。" },
+      { role: 0, en: "Right this way. Here is your menu.", zh: "这边请。这是您的菜单。" },
+      { role: 1, en: "Thank you. What do you recommend?", zh: "谢谢。你推荐什么？" },
+      { role: 0, en: "The grilled salmon is very popular.", zh: "烤三文鱼很受欢迎。" },
+      { role: 1, en: "That sounds great. I'll take it.", zh: "听起来不错，我就要它。" },
+    ],
+  },
+  "看医生 At the Doctor": {
+    roles: ["医生 Doctor", "病人 Patient"],
+    turns: [
+      { role: 0, en: "Hi, what brings you in today?", zh: "你好，今天怎么了？" },
+      { role: 1, en: "I have a sore throat and a fever.", zh: "我喉咙痛，还发烧。" },
+      { role: 0, en: "How long have you felt this way?", zh: "你这样多久了？" },
+      { role: 1, en: "For about three days now.", zh: "大概三天了。" },
+      { role: 0, en: "Let me take a look. Open your mouth, please.", zh: "我来看看。请张开嘴。" },
+      { role: 1, en: "Is it serious, doctor?", zh: "严重吗，医生？" },
+    ],
+  },
+  "电话预约 Making an Appointment": {
+    roles: ["前台 Receptionist", "来电者 Caller"],
+    turns: [
+      { role: 0, en: "Good morning, how can I help you?", zh: "早上好，有什么可以帮您？" },
+      { role: 1, en: "Hi, I'd like to make an appointment.", zh: "你好，我想预约。" },
+      { role: 0, en: "Sure, what day works best for you?", zh: "好的，你哪天方便？" },
+      { role: 1, en: "Is Friday afternoon available?", zh: "周五下午有空吗？" },
+      { role: 0, en: "Yes, three o'clock is open.", zh: "有的，三点空着。" },
+      { role: 1, en: "Perfect. I'll see you then.", zh: "太好了，到时见。" },
+    ],
+  },
+};
+
+/* ================= IPA 音标词典（通用美音, 离线） ================= */
+const IPA = {
+  "a":"ə","aboard":"əˈbɔrd","about":"əˈbaʊt","agree":"əˈɡri","alex":"ˈælɪks","amazing":"əˈmeɪzɪŋ",
+  "and":"ænd","any":"ˈɛni","anything":"ˈɛniˌθɪŋ","appreciate":"əˈpriʃiˌeɪt","around":"əˈraʊnd","as":"æz",
+  "at":"æt","back":"bæk","bank":"bæŋk","be":"bi","been":"bɪn","breakfast":"ˈbrɛkfəst","by":"baɪ",
+  "call":"kɔl","can":"kæn","card":"kɑrd","cards":"kɑrdz","care":"kɛr","check":"tʃɛk","checkout":"ˈtʃɛkaʊt",
+  "chicken":"ˈtʃɪkɪn","chocolate":"ˈtʃɔklət","corner":"ˈkɔrnər","cost":"kɔst","could":"kʊd","credit":"ˈkrɛdɪt",
+  "day":"deɪ","delicious":"dɪˈlɪʃəs","did":"dɪd","dish":"dɪʃ","distance":"ˈdɪstəns","do":"du","does":"dʌz",
+  "dollars":"ˈdɑlərz","eat":"it","enjoy":"ɪnˈdʒɔɪ","everyone":"ˈɛvriˌwʌn","everything":"ˈɛvriˌθɪŋ",
+  "excuse":"ɪkˈskjuz","far":"fɑr","file":"faɪl","first":"fɜrst","five":"faɪv","flight":"flaɪt","for":"fɔr",
+  "friendly":"ˈfrɛndli","from":"frʌm","fun":"fʌn","game":"ɡeɪm","get":"ɡɛt","glad":"ɡlæd","glass":"ɡlæs",
+  "go":"ɡoʊ","going":"ˈɡoʊɪŋ","good":"ɡʊd","great":"ɡreɪt","hanging":"ˈhæŋɪŋ","have":"hæv","hear":"hɪr",
+  "help":"hɛlp","here":"hɪr","here's":"hɪrz","hi":"haɪ","home":"hoʊm","how":"haʊ","how's":"haʊz","i":"aɪ",
+  "i'd":"aɪd","i'll":"aɪl","i'm":"aɪm","if":"ɪf","in":"ɪn","included":"ɪnˈkludɪd","intern":"ˈɪntɜrn","is":"ɪz",
+  "it":"ɪt","it's":"ɪts","job":"dʒɑb","just":"dʒʌst","know":"noʊ","larger":"ˈlɑrdʒər","last":"læst",
+  "lately":"ˈleɪtli","latte":"ˈlɑteɪ","left":"lɛft","let":"lɛt","let's":"lɛts","like":"laɪk","long":"lɔŋ",
+  "looking":"ˈlʊkɪŋ","me":"mi","medium":"ˈmidiəm","meet":"mit","meeting":"ˈmitɪŋ","menu":"ˈmɛnju",
+  "minute":"ˈmɪnɪt","more":"mɔr","much":"mʌtʃ","muffin":"ˈmʌfɪn","museum":"mjuˈziəm","must":"mʌst","my":"maɪ",
+  "nearby":"ˈnɪrˌbaɪ","nearest":"ˈnɪrəst","need":"nid","new":"nu","next":"nɛkst","nice":"naɪs","night":"naɪt",
+  "no":"noʊ","of":"ʌv","on":"ɑn","or":"ɔr","out":"aʊt","over":"ˈoʊvər","place":"pleɪs","please":"pliz",
+  "possible":"ˈpɑsəbəl","presentation":"ˌprɛzənˈteɪʃən","questions":"ˈkwɛstʃənz","really":"ˈrɪli",
+  "receipt":"rɪˈsit","recommend":"ˌrɛkəˈmɛnd","right":"raɪt","sam":"sæm","schedule":"ˈskɛdʒul","see":"si",
+  "send":"sɛnd","six":"sɪks","size":"saɪz","so":"soʊ","soon":"sun","sounds":"saʊndz","spicy":"ˈspaɪsi",
+  "station":"ˈsteɪʃən","straight":"streɪt","subway":"ˈsʌbˌweɪ","sure":"ʃʊr","take":"teɪk","taxi":"ˈtæksi",
+  "tell":"tɛl","thank":"θæŋk","thanks":"θæŋks","that":"ðæt","that'll":"ˈðætəl","the":"ðə","there":"ðɛr",
+  "this":"ðɪs","time":"taɪm","to":"tu","today":"təˈdeɪ","together":"təˈɡɛðər","tomorrow":"təˈmɑroʊ",
+  "totally":"ˈtoʊtəli","try":"traɪ","turn":"tɜrn","up":"ʌp","visit":"ˈvɪzɪt","walk":"wɔk","walking":"ˈwɔkɪŋ",
+  "was":"wʌz","watch":"wɑtʃ","water":"ˈwɔtər","way":"weɪ","we":"wi","weather":"ˈwɛðər","weekend":"ˈwikɛnd",
+  "welcome":"ˈwɛlkəm","what":"wʌt","which":"wɪtʃ","with":"wɪð","within":"wɪˈðɪn","would":"wʊd","yes":"jɛs",
+  "you":"ju","you're":"jʊr","your":"jɔr",
+  "afternoon":"ˌæftərˈnun","an":"ən","appointment":"əˈpɔɪntmənt","available":"əˈveɪləbəl","best":"bɛst",
+  "brings":"brɪŋz","days":"deɪz","doctor":"ˈdɑktər","evening":"ˈivnɪŋ","felt":"fɛlt","fever":"ˈfivər",
+  "friday":"ˈfraɪdeɪ","grilled":"ɡrɪld","look":"lʊk","make":"meɪk","morning":"ˈmɔrnɪŋ","mouth":"maʊθ",
+  "now":"naʊ","o'clock":"əˈklɑk","open":"ˈoʊpən","perfect":"ˈpɜrfɪkt","popular":"ˈpɑpjələr",
+  "reservation":"ˌrɛzərˈveɪʃən","salmon":"ˈsæmən","serious":"ˈsɪriəs","sore":"sɔr","table":"ˈteɪbəl",
+  "then":"ðɛn","three":"θri","throat":"θroʊt","two":"tu","very":"ˈvɛri","works":"wɜrks"
+};
+function ipaFor(sentence) {
+  const tokens = sentence.toLowerCase().match(/[a-z']+/g) || [];
+  const out = tokens.map(w => IPA[w] || IPA[w.replace(/'s$/, "")] || "·");
+  return out.length ? "/ " + out.join(" ") + " /" : "";
+}
+
+/* ================= 本地存储 ================= */
+const LS = {
+  get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
+  set(k, v) { localStorage.setItem(k, JSON.stringify(v)); },
+};
+const todayStr = () => new Date().toISOString().slice(0, 10);
+
+/* 语料：优先使用用户自定义内容，否则用内置默认 */
+function validateData(obj) {
+  if (!obj || typeof obj !== "object" || Array.isArray(obj)) throw new Error("练习场景应是一个对象");
+  const keys = Object.keys(obj);
+  if (!keys.length) throw new Error("至少需要一个场景");
+  keys.forEach(k => {
+    if (!Array.isArray(obj[k]) || !obj[k].length) throw new Error(`场景「${k}」应是非空数组`);
+    obj[k].forEach((it, i) => {
+      if (!it || typeof it.en !== "string" || typeof it.zh !== "string" || !it.en.trim())
+        throw new Error(`场景「${k}」第 ${i + 1} 项需含 en 和 zh 文本`);
+    });
+  });
+  return obj;
+}
+function validateDialogues(obj) {
+  if (!obj || typeof obj !== "object" || Array.isArray(obj)) throw new Error("对话剧本应是一个对象");
+  const keys = Object.keys(obj);
+  if (!keys.length) throw new Error("至少需要一段对话");
+  keys.forEach(k => {
+    const d = obj[k];
+    if (!d || !Array.isArray(d.roles) || d.roles.length !== 2) throw new Error(`对话「${k}」需要 roles（两个角色）`);
+    if (!Array.isArray(d.turns) || !d.turns.length) throw new Error(`对话「${k}」需要非空 turns`);
+    d.turns.forEach((t, i) => {
+      if (!t || (t.role !== 0 && t.role !== 1) || typeof t.en !== "string" || typeof t.zh !== "string" || !t.en.trim())
+        throw new Error(`对话「${k}」第 ${i + 1} 句需含 role(0/1)、en、zh`);
+    });
+  });
+  return obj;
+}
+let DATA, DIALOGUES;
+try { DATA = validateData(LS.get("esc_custom_data", null)); } catch { DATA = DEFAULT_DATA; }
+try { DIALOGUES = validateDialogues(LS.get("esc_custom_dialogues", null)); } catch { DIALOGUES = DEFAULT_DIALOGUES; }
+
+function loadStreak() { return LS.get("esc_streak", { lastDate: "", count: 0, todayCount: 0 }); }
+function saveStreak(s) { LS.set("esc_streak", s); }
+
+function loadHistory() { return LS.get("esc_history", {}); }
+function saveHistory(h) { LS.set("esc_history", h); }
+
+/* 记录一次练习：更新打卡 + 当日练习数 + 历史得分 */
+function logAttempt(score) {
+  const s = loadStreak();
+  const today = todayStr();
+  if (s.lastDate !== today) {
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    s.count = s.lastDate === yesterday ? (s.count + 1) : 1;
+    s.lastDate = today;
+    s.todayCount = 0;
+  }
+  s.todayCount = (s.todayCount || 0) + 1;
+  saveStreak(s);
+
+  if (typeof score === "number" && !isNaN(score)) {
+    const h = loadHistory();
+    const d = h[today] || { count: 0, sum: 0 };
+    d.count += 1; d.sum += score;
+    h[today] = d;
+    saveHistory(h);
+  }
+  renderStats();
+}
+
+function loadMistakes() { return LS.get("esc_mistakes", []); }
+function saveMistakes(m) { LS.set("esc_mistakes", m); }
+function addMistake(item, score) {
+  const m = loadMistakes();
+  const exist = m.find(x => x.en === item.en);
+  if (exist) { exist.score = score; exist.date = todayStr(); exist.count = (exist.count || 1) + 1; }
+  else { m.unshift({ en: item.en, zh: item.zh, score, date: todayStr(), count: 1 }); }
+  saveMistakes(m);
+  renderStats();
+}
+function removeMistake(en) { saveMistakes(loadMistakes().filter(x => x.en !== en)); renderStats(); renderMistakes(); }
+
+function renderStats() {
+  const s = loadStreak();
+  $("stStreak").textContent = s.count || 0;
+  $("stToday").textContent = s.lastDate === todayStr() ? (s.todayCount || 0) : 0;
+  $("stMistakes").textContent = loadMistakes().length;
+}
+
+/* ================= 通用 ================= */
+const $ = (id) => document.getElementById(id);
+const synth = window.speechSynthesis;
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const srSupported = !!SR;
+const MISTAKE_THRESHOLD = 70;
+
+function speak(text, rate, cb) {
+  if (!synth) { cb && cb(); return; }
+  synth.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US"; u.rate = rate;
+  if (cb) u.onend = cb;
+  synth.speak(u);
+}
+
+function normalize(s) {
+  return s.toLowerCase().replace(/[^a-z0-9'\s]/g, " ").replace(/\s+/g, " ").trim();
+}
+function scoreSpeech(target, heard) {
+  const t = normalize(target).split(" ").filter(Boolean);
+  const h = normalize(heard).split(" ").filter(Boolean);
+  const heardSet = {}; h.forEach(w => heardSet[w] = (heardSet[w] || 0) + 1);
+  const used = {};
+  const marks = t.map(word => {
+    if (heardSet[word] && (used[word] || 0) < heardSet[word]) { used[word] = (used[word]||0)+1; return { word, ok: true }; }
+    return { word, ok: false };
+  });
+  const correct = marks.filter(m => m.ok).length;
+  const score = t.length ? Math.round((correct / t.length) * 100) : 0;
+  return { score, marks };
+}
+function colorFor(s) { return s >= 85 ? "#22c55e" : s >= 60 ? "#facc15" : "#f87171"; }
+function feedbackFor(s) {
+  if (s >= 90) return "🎉 太棒了，发音非常清晰！";
+  if (s >= 75) return "👍 不错！再注意一下标红的词。";
+  if (s >= 50) return "💪 有进步，跟着标准发音再练几遍。";
+  return "🔁 没关系，先听标准发音，再慢速跟读。";
+}
+function diffHtml(marks) {
+  return marks.map(m => `<span class="${m.ok ? "ok" : "miss"}">${m.word}</span>`).join(" ");
+}
+
+/* 共用录音：传入目标句和结果回调 */
+let recognizing = false, recognition = null;
+function record(targetText, onScore, btn) {
+  if (!srSupported) return;
+  if (recognizing) { recognition && recognition.stop(); return; }
+  recognition = new SR();
+  recognition.lang = "en-US"; recognition.interimResults = false; recognition.maxAlternatives = 1;
+  const label = btn.textContent;
+  recognition.onstart = () => { recognizing = true; btn.classList.add("recording"); btn.textContent = "🔴 正在听… 点击停止"; };
+  recognition.onerror = (e) => { onScore(null, e.error); };
+  recognition.onend = () => { recognizing = false; btn.classList.remove("recording"); btn.textContent = label; };
+  recognition.onresult = (e) => { onScore(e.results[0][0].transcript, null); };
+  recognition.start();
+}
+
+/* ================= 练习模式 ================= */
+let currentScene = Object.keys(DATA)[0];
+let index = 0;
+const sentences = () => DATA[currentScene];
+
+function renderScenes() {
+  const box = $("scenarios"); box.innerHTML = "";
+  Object.keys(DATA).forEach(name => {
+    const c = document.createElement("div");
+    c.className = "chip" + (name === currentScene ? " active" : "");
+    c.textContent = name;
+    c.onclick = () => { currentScene = name; index = 0; renderScenes(); renderCard(); };
+    box.appendChild(c);
+  });
+}
+function renderCard() {
+  const list = sentences(), item = list[index];
+  $("progress").textContent = `${currentScene} · 第 ${index + 1} / ${list.length} 句`;
+  $("zh").textContent = item.zh; $("en").textContent = item.en;
+  $("phon").textContent = ipaFor(item.en);
+  $("result").innerHTML = "";
+  $("prevBtn").disabled = index === 0;
+  $("nextBtn").disabled = index === list.length - 1;
+  $("recBtn").disabled = !srSupported;
+}
+function renderPracticeResult(target, heard, err) {
+  if (err) { $("result").innerHTML = `<div class="tip">⚠️ 录音出错：${err}。请检查麦克风权限。</div>`; return; }
+  const { score, marks } = scoreSpeech(target, heard);
+  $("result").innerHTML = `
+    <div class="heard"><span class="label">识别到你说的：</span>${heard || "（没听清）"}</div>
+    <div class="score-row">
+      <div class="score-num" style="color:${colorFor(score)}">${score}</div>
+      <div class="score-bar"><div class="score-fill" style="background:${colorFor(score)}"></div></div>
+    </div>
+    <div class="diff">${diffHtml(marks)}</div>
+    <div class="tip">${feedbackFor(score)}</div>`;
+  requestAnimationFrame(() => { $("result").querySelector(".score-fill").style.width = score + "%"; });
+  logAttempt(score);
+  if (score < MISTAKE_THRESHOLD) addMistake(sentences()[index], score);
+}
+
+$("playBtn").onclick = () => speak(sentences()[index].en, 1);
+$("slowBtn").onclick = () => speak(sentences()[index].en, 0.6);
+$("recBtn").onclick = () => record(sentences()[index].en, (h, e) => renderPracticeResult(sentences()[index].en, h, e), $("recBtn"));
+$("prevBtn").onclick = () => { if (index > 0) { index--; renderCard(); } };
+$("nextBtn").onclick = () => { if (index < sentences().length - 1) { index++; renderCard(); } };
+
+/* ================= 对话模式 ================= */
+let dlgKey = Object.keys(DIALOGUES)[0];
+let myRole = 0;     // 用户扮演的角色
+let turnPos = 0;    // 当前进行到第几句
+const dlg = () => DIALOGUES[dlgKey];
+
+function renderDialogScenes() {
+  const box = $("dialogScenes"); box.innerHTML = "";
+  Object.keys(DIALOGUES).forEach(name => {
+    const c = document.createElement("div");
+    c.className = "chip" + (name === dlgKey ? " active" : "");
+    c.textContent = name;
+    c.onclick = () => { dlgKey = name; myRole = 0; restartDialogue(); renderDialogScenes(); };
+    box.appendChild(c);
+  });
+}
+function renderRolePick() {
+  const box = $("rolePick"); box.innerHTML = "";
+  dlg().roles.forEach((r, i) => {
+    const b = document.createElement("button");
+    b.className = "mode-btn" + (i === myRole ? " active" : "");
+    b.textContent = "我演：" + r;
+    b.onclick = () => { myRole = i; restartDialogue(); };
+    box.appendChild(b);
+  });
+}
+function restartDialogue() {
+  playingAll = false; speakingIdx = -1;
+  if (synth) synth.cancel();
+  $("dlgPlayAllBtn").textContent = "🔊 整段连读";
+  $("dlgSubtitle").classList.add("hidden");
+  turnPos = 0;
+  $("dlgResult").innerHTML = "";
+  renderRolePick();
+  renderTurns();
+  advanceDialogue();
+}
+function renderTurns() {
+  const box = $("turns"); box.innerHTML = "";
+  dlg().turns.forEach((t, i) => {
+    const mine = t.role === myRole;
+    const row = document.createElement("div");
+    const revealed = playingAll || i < turnPos || (i === turnPos && !mine);
+    const active = playingAll || i <= turnPos;
+    row.className = "turn " + (mine ? "me " : "") + (active ? "active" : "") + (playingAll && i === speakingIdx ? " speaking" : "");
+    row.innerHTML = `
+      <div class="avatar">${mine ? "🧑" : "🤖"}</div>
+      <div class="bubble">
+        <p class="en">${revealed ? t.en : (mine ? "🎤 轮到你说这句…" : "…")}</p>
+        ${revealed ? `<p class="zh">${t.zh}</p><p class="mini">${ipaFor(t.en)}</p>` : (mine ? `<p class="zh">${t.zh}</p>` : "")}
+      </div>`;
+    box.appendChild(row);
+  });
+  $("dlgProgress").textContent = playingAll
+    ? `${dlgKey} · 整段连读中…`
+    : `${dlgKey} · 第 ${Math.min(turnPos + 1, dlg().turns.length)} / ${dlg().turns.length} 句`;
+}
+/* 推进对话：若当前轮是对方的，自动朗读并前进；若是用户的，等待录音 */
+function advanceDialogue() {
+  const turns = dlg().turns;
+  if (turnPos >= turns.length) {
+    $("dlgResult").innerHTML = `<div class="tip">✅ 这段对话完成了！点「重新开始」再练一遍，或换个角色。</div>`;
+    $("dlgRecBtn").disabled = true; $("dlgPlayBtn").disabled = true;
+    return;
+  }
+  const t = turns[turnPos];
+  renderTurns();
+  if (t.role === myRole) {
+    $("dlgRecBtn").disabled = !srSupported;
+    $("dlgPlayBtn").disabled = false;
+  } else {
+    $("dlgRecBtn").disabled = true;
+    $("dlgPlayBtn").disabled = false;
+    speak(t.en, 1, () => { if (playingAll) return; turnPos++; advanceDialogue(); });
+  }
+}
+
+/* 整段连读回放：依次朗读全部台词（不改变练习进度） */
+let playingAll = false, speakingIdx = -1;
+function playWholeDialogue() {
+  if (playingAll) { stopPlayAll(false); return; }
+  playingAll = true; speakingIdx = -1;
+  $("dlgPlayAllBtn").textContent = "⏹ 停止连读";
+  $("dlgRecBtn").disabled = true; $("dlgPlayBtn").disabled = true; $("dlgRestartBtn").disabled = true;
+  $("dlgResult").innerHTML = `<div class="tip">🔊 整段连读中，跟着默念吧…</div>`;
+  let i = 0;
+  const step = () => {
+    if (!playingAll) return;
+    if (i >= dlg().turns.length) { stopPlayAll(true); return; }
+    speakingIdx = i; renderTurns();
+    const t = dlg().turns[i];
+    showSubtitle(t);
+    const row = $("turns").children[i];
+    if (row) row.scrollIntoView({ behavior: "smooth", block: "center" });
+    speak(t.en, 1, () => { i++; if (playingAll) setTimeout(step, 450); });
+  };
+  step();
+}
+function showSubtitle(t) {
+  const el = $("dlgSubtitle");
+  el.classList.remove("hidden");
+  el.innerHTML = `<div class="s-en">${t.en}</div><div class="s-zh">${t.zh}</div>`;
+}
+function stopPlayAll(finished) {
+  playingAll = false; speakingIdx = -1;
+  if (synth) synth.cancel();
+  $("dlgPlayAllBtn").textContent = "🔊 整段连读";
+  $("dlgRestartBtn").disabled = false;
+  $("dlgSubtitle").classList.add("hidden");
+  renderTurns();
+  $("dlgResult").innerHTML = finished
+    ? `<div class="tip">✅ 整段连读完毕。点「重新开始」自己练，或再听一遍。</div>` : "";
+  const t = dlg().turns[turnPos];
+  $("dlgRecBtn").disabled = !(t && t.role === myRole && srSupported);
+  $("dlgPlayBtn").disabled = !t;
+}
+function renderDlgResult(target, heard, err) {
+  if (err) { $("dlgResult").innerHTML = `<div class="tip">⚠️ 录音出错：${err}。</div>`; return; }
+  const { score, marks } = scoreSpeech(target, heard);
+  $("dlgResult").innerHTML = `
+    <div class="heard"><span class="label">你说的：</span>${heard || "（没听清）"}</div>
+    <div class="score-row">
+      <div class="score-num" style="color:${colorFor(score)}">${score}</div>
+      <div class="score-bar"><div class="score-fill" style="background:${colorFor(score)}; width:${score}%"></div></div>
+    </div>
+    <div class="diff">${diffHtml(marks)}</div>
+    <div class="tip">${feedbackFor(score)} ${score >= 50 ? "继续下一句 →" : "可重说一次。"}</div>`;
+  logAttempt(score);
+  if (score < MISTAKE_THRESHOLD) addMistake({ en: target, zh: dlg().turns[turnPos].zh }, score);
+  if (score >= 50) { turnPos++; setTimeout(advanceDialogue, 700); }
+}
+$("dlgPlayBtn").onclick = () => { const t = dlg().turns[turnPos]; if (t) speak(t.en, 1); };
+$("dlgRecBtn").onclick = () => { const t = dlg().turns[turnPos]; if (t) record(t.en, (h, e) => renderDlgResult(t.en, h, e), $("dlgRecBtn")); };
+$("dlgPlayAllBtn").onclick = playWholeDialogue;
+$("dlgRestartBtn").onclick = () => { if (playingAll) stopPlayAll(false); $("dlgRecBtn").disabled = false; $("dlgPlayBtn").disabled = false; restartDialogue(); };
+
+/* ================= 错题本 ================= */
+function renderMistakes() {
+  const box = $("mistakeList");
+  const list = loadMistakes();
+  if (!list.length) { box.innerHTML = `<div class="empty">📭 错题本是空的。<br/>练习时得分低于 ${MISTAKE_THRESHOLD} 的句子会自动收进这里。</div>`; return; }
+  box.innerHTML = "";
+  list.forEach(m => {
+    const el = document.createElement("div");
+    el.className = "mistake";
+    el.innerHTML = `
+      <div class="top">
+        <p class="en">${m.en}</p>
+        <span class="badge" style="background:${colorFor(m.score)}">${m.score}</span>
+      </div>
+      <p class="zh">${m.zh}</p>
+      <p class="mini" style="color:var(--accent);font-size:13px;margin:4px 0 0">${ipaFor(m.en)}</p>
+      <div class="row-actions">
+        <button class="mini-btn play">🔊 朗读</button>
+        <button class="mini-btn rec">🎤 重练</button>
+        <button class="mini-btn del">🗑 移除</button>
+        <span class="meta" style="margin-left:auto">练习 ${m.count || 1} 次 · ${m.date}</span>
+      </div>
+      <div class="result"></div>`;
+    el.querySelector(".play").onclick = () => speak(m.en, 1);
+    el.querySelector(".del").onclick = () => removeMistake(m.en);
+    const recBtn = el.querySelector(".rec");
+    recBtn.onclick = () => record(m.en, (h, e) => {
+      const resBox = el.querySelector(".result");
+      if (e) { resBox.innerHTML = `<div class="tip">⚠️ ${e}</div>`; return; }
+      const { score, marks } = scoreSpeech(m.en, h);
+      resBox.innerHTML = `<div class="heard" style="margin-top:10px"><span class="label">你说的：</span>${h || "（没听清）"}</div>
+        <div class="diff" style="margin-top:10px">${diffHtml(marks)}</div>
+        <div class="mini" style="color:var(--accent);font-size:13px;margin-top:6px">${ipaFor(m.en)}</div>
+        <div class="tip"><b style="color:${colorFor(score)}">${score} 分</b> · ${feedbackFor(score)}</div>`;
+      logAttempt(score);
+      if (score >= MISTAKE_THRESHOLD) { removeMistake(m.en); }
+      else { addMistake({ en: m.en, zh: m.zh }, score); }
+    }, recBtn);
+    box.appendChild(el);
+  });
+}
+
+/* ================= 进度图（SVG，最近 14 天） ================= */
+function renderChart() {
+  const h = loadHistory();
+  const days = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    const rec = h[d] || { count: 0, sum: 0 };
+    days.push({ date: d, count: rec.count, avg: rec.count ? Math.round(rec.sum / rec.count) : null });
+  }
+  const W = 700, H = 240, padL = 36, padR = 36, padT = 16, padB = 30;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const maxCount = Math.max(1, ...days.map(d => d.count));
+  const bw = plotW / days.length;
+  const x = (i) => padL + i * bw + bw / 2;
+  const yCount = (c) => padT + plotH - (c / maxCount) * plotH;
+  const yScore = (s) => padT + plotH - (s / 100) * plotH;
+
+  let bars = "", labels = "", dots = "", linePts = [];
+  days.forEach((d, i) => {
+    const cx = x(i);
+    if (d.count > 0) {
+      const bh = plotH - (yCount(d.count) - padT);
+      bars += `<rect x="${cx - bw * 0.3}" y="${yCount(d.count)}" width="${bw * 0.6}" height="${bh}" rx="3" fill="#38bdf8" opacity="0.85"><title>${d.date}: ${d.count} 句</title></rect>`;
+    }
+    if (d.avg !== null) {
+      linePts.push([cx, yScore(d.avg)]);
+      dots += `<circle cx="${cx}" cy="${yScore(d.avg)}" r="3.5" fill="#facc15"><title>${d.date}: 平均 ${d.avg} 分</title></circle>`;
+    }
+    if (i % 2 === 0) labels += `<text x="${cx}" y="${H - 8}" text-anchor="middle" font-size="10" fill="#94a3b8">${d.date.slice(5)}</text>`;
+  });
+  // 平均分折线（仅连接有数据的相邻点）
+  let path = "";
+  for (let k = 1; k < linePts.length; k++) {
+    path += `<line x1="${linePts[k-1][0]}" y1="${linePts[k-1][1]}" x2="${linePts[k][0]}" y2="${linePts[k][1]}" stroke="#facc15" stroke-width="2"/>`;
+  }
+  // 网格线 (0/50/100 分参考)
+  let grid = "";
+  [0, 50, 100].forEach(s => {
+    const yy = yScore(s);
+    grid += `<line x1="${padL}" y1="${yy}" x2="${W - padR}" y2="${yy}" stroke="#334155" stroke-dasharray="3 4"/>`;
+    grid += `<text x="${W - padR + 4}" y="${yy + 3}" font-size="9" fill="#64748b">${s}</text>`;
+  });
+
+  $("chart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="练习历史图">
+    ${grid}${bars}${path}${dots}${labels}</svg>`;
+
+  const active = days.filter(d => d.count > 0);
+  const total = active.reduce((a, d) => a + d.count, 0);
+  const overallAvg = total ? Math.round(active.reduce((a, d) => a + d.avg * d.count, 0) / total) : 0;
+  $("chartSummary").innerHTML = active.length
+    ? `近 14 天共练习 <b style="color:var(--accent)">${total}</b> 句，活跃 <b style="color:var(--accent)">${active.length}</b> 天，平均得分 <b style="color:${colorFor(overallAvg)}">${overallAvg}</b> 分。`
+    : "还没有练习记录，去「练习」或「对话」模式开口说几句吧！";
+}
+
+/* ================= 模式切换 ================= */
+function setMode(mode) {
+  document.querySelectorAll(".mode-btn").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
+  $("practiceView").classList.toggle("hidden", mode !== "practice");
+  $("dialogueView").classList.toggle("hidden", mode !== "dialogue");
+  $("reviewView").classList.toggle("hidden", mode !== "review");
+  $("progressView").classList.toggle("hidden", mode !== "progress");
+  $("editorView").classList.toggle("hidden", mode !== "editor");
+  if (playingAll) stopPlayAll(false);
+  if (synth) synth.cancel();
+  if (recognizing && recognition) recognition.stop();
+  if (mode === "dialogue") { $("dlgRecBtn").disabled = false; $("dlgPlayBtn").disabled = false; restartDialogue(); }
+  if (mode === "review") renderMistakes();
+  if (mode === "progress") renderChart();
+  if (mode === "editor") loadEditor();
+}
+document.querySelectorAll(".mode-btn").forEach(b => b.onclick = () => setMode(b.dataset.mode));
+
+document.addEventListener("keydown", (e) => {
+  if ($("practiceView").classList.contains("hidden")) return;
+  if (e.code === "Space") { e.preventDefault(); $("playBtn").click(); }
+  if (e.code === "ArrowRight") $("nextBtn").click();
+  if (e.code === "ArrowLeft") $("prevBtn").click();
+  if (e.key.toLowerCase() === "r") $("recBtn").click();
+});
+
+$("clearAll").onclick = (e) => {
+  e.preventDefault();
+  if (confirm("确定要清空打卡记录、错题本和练习历史吗？（自定义语料不受影响）此操作不可恢复。")) {
+    localStorage.removeItem("esc_streak");
+    localStorage.removeItem("esc_mistakes");
+    localStorage.removeItem("esc_history");
+    renderStats(); renderMistakes(); renderChart();
+  }
+};
+
+/* ================= 自定义编辑（可视化表单） ================= */
+function setEditStatus(msg, cls) {
+  const el = $("editStatus");
+  el.textContent = msg;
+  el.className = "editor-status" + (cls ? " " + cls : "");
+}
+function applyCorpus(newData, newDialogues, persist) {
+  DATA = newData; DIALOGUES = newDialogues;
+  if (persist) {
+    LS.set("esc_custom_data", DATA);
+    LS.set("esc_custom_dialogues", DIALOGUES);
+  }
+  // 重置当前选择，避免引用到已删除的场景
+  currentScene = Object.keys(DATA)[0];
+  index = 0;
+  dlgKey = Object.keys(DIALOGUES)[0];
+  myRole = 0;
+  renderScenes(); renderCard(); renderDialogScenes();
+}
+
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+/* 表单工作副本（数组形式，便于增删改名） */
+let editModel = { data: [], dialogues: [] };
+function objectsToModel(d, g) {
+  editModel = {
+    data: Object.entries(d).map(([name, items]) => ({ name, items: items.map(it => ({ en: it.en, zh: it.zh })) })),
+    dialogues: Object.entries(g).map(([name, dd]) => ({ name, roles: [dd.roles[0], dd.roles[1]], turns: dd.turns.map(t => ({ role: t.role, en: t.en, zh: t.zh })) })),
+  };
+}
+function modelToObjects() {
+  const dataObj = {}; editModel.data.forEach(s => { dataObj[(s.name || "").trim()] = s.items.map(it => ({ en: it.en, zh: it.zh })); });
+  const dlgObj = {}; editModel.dialogues.forEach(d => { dlgObj[(d.name || "").trim()] = { roles: [d.roles[0], d.roles[1]], turns: d.turns.map(t => ({ role: t.role, en: t.en, zh: t.zh })) }; });
+  return { dataObj, dlgObj };
+}
+function loadEditor() {
+  objectsToModel(DATA, DIALOGUES);
+  renderDataEditor(); renderDlgEditor();
+  setEditStatus("", "");
+}
+function renderDataEditor() {
+  $("dataEditor").innerHTML = editModel.data.map((s, si) => `
+    <div class="edit-card">
+      <div class="edit-head">
+        <input class="f-input name" data-act="scene-name" data-si="${si}" value="${esc(s.name)}" placeholder="场景名" />
+        <button class="btn-x" data-act="del-scene" data-si="${si}">删除场景</button>
+      </div>
+      ${s.items.map((it, qi) => `
+        <div class="edit-row" data-si="${si}" data-qi="${qi}">
+          <span class="drag-handle" draggable="true" data-si="${si}" data-qi="${qi}" title="拖拽排序">⠿</span>
+          <input class="f-input en" data-act="q-en" data-si="${si}" data-qi="${qi}" value="${esc(it.en)}" placeholder="English" />
+          <input class="f-input zh" data-act="q-zh" data-si="${si}" data-qi="${qi}" value="${esc(it.zh)}" placeholder="中文" />
+          <button class="btn-icon" data-act="up-q" data-si="${si}" data-qi="${qi}" title="上移">▲</button>
+          <button class="btn-icon" data-act="down-q" data-si="${si}" data-qi="${qi}" title="下移">▼</button>
+          <button class="btn-icon" data-act="play-q" data-si="${si}" data-qi="${qi}" title="试听">🔊</button>
+          <button class="btn-x" data-act="del-q" data-si="${si}" data-qi="${qi}">✕</button>
+        </div>`).join("")}
+      <button class="btn-add" data-act="add-q" data-si="${si}">＋ 添加句子</button>
+    </div>`).join("");
+}
+function renderDlgEditor() {
+  $("dlgEditor").innerHTML = editModel.dialogues.map((d, di) => `
+    <div class="edit-card">
+      <div class="edit-head">
+        <input class="f-input name" data-act="dlg-name" data-di="${di}" value="${esc(d.name)}" placeholder="对话名" />
+        <button class="btn-x" data-act="del-dlg" data-di="${di}">删除对话</button>
+      </div>
+      <div class="edit-roles">
+        <input class="f-input" data-act="role" data-di="${di}" data-ri="0" value="${esc(d.roles[0])}" placeholder="角色1 名称" />
+        <input class="f-input" data-act="role" data-di="${di}" data-ri="1" value="${esc(d.roles[1])}" placeholder="角色2 名称" />
+      </div>
+      ${d.turns.map((t, ti) => `
+        <div class="edit-row" data-di="${di}" data-ti="${ti}">
+          <span class="drag-handle" draggable="true" data-di="${di}" data-ti="${ti}" title="拖拽排序">⠿</span>
+          <select class="f-input" data-act="t-role" data-di="${di}" data-ti="${ti}">
+            <option value="0" ${t.role === 0 ? "selected" : ""}>角色1</option>
+            <option value="1" ${t.role === 1 ? "selected" : ""}>角色2</option>
+          </select>
+          <input class="f-input en" data-act="t-en" data-di="${di}" data-ti="${ti}" value="${esc(t.en)}" placeholder="English" />
+          <input class="f-input zh" data-act="t-zh" data-di="${di}" data-ti="${ti}" value="${esc(t.zh)}" placeholder="中文" />
+          <button class="btn-icon" data-act="up-t" data-di="${di}" data-ti="${ti}" title="上移">▲</button>
+          <button class="btn-icon" data-act="down-t" data-di="${di}" data-ti="${ti}" title="下移">▼</button>
+          <button class="btn-icon" data-act="play-t" data-di="${di}" data-ti="${ti}" title="试听">🔊</button>
+          <button class="btn-x" data-act="del-turn" data-di="${di}" data-ti="${ti}">✕</button>
+        </div>`).join("")}
+      <button class="btn-add" data-act="add-turn" data-di="${di}">＋ 添加台词</button>
+    </div>`).join("");
+}
+/* 事件委托：输入更新模型，结构性增删后重渲染 */
+$("dataEditor").addEventListener("input", (e) => {
+  const t = e.target, a = t.dataset.act; if (!a) return;
+  const si = +t.dataset.si;
+  if (a === "scene-name") editModel.data[si].name = t.value;
+  else if (a === "q-en") editModel.data[si].items[+t.dataset.qi].en = t.value;
+  else if (a === "q-zh") editModel.data[si].items[+t.dataset.qi].zh = t.value;
+});
+function swap(arr, i, j) { if (j >= 0 && j < arr.length) { [arr[i], arr[j]] = [arr[j], arr[i]]; } }
+$("dataEditor").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  const a = b.dataset.act, si = +b.dataset.si, qi = +b.dataset.qi;
+  if (a === "play-q") { speak(editModel.data[si].items[qi].en, 1); return; }
+  if (a === "del-scene") editModel.data.splice(si, 1);
+  else if (a === "add-q") editModel.data[si].items.push({ en: "", zh: "" });
+  else if (a === "del-q") editModel.data[si].items.splice(qi, 1);
+  else if (a === "up-q") swap(editModel.data[si].items, qi, qi - 1);
+  else if (a === "down-q") swap(editModel.data[si].items, qi, qi + 1);
+  else return;
+  renderDataEditor();
+});
+$("dlgEditor").addEventListener("input", (e) => {
+  const t = e.target, a = t.dataset.act; if (!a) return;
+  const di = +t.dataset.di;
+  if (a === "dlg-name") editModel.dialogues[di].name = t.value;
+  else if (a === "role") editModel.dialogues[di].roles[+t.dataset.ri] = t.value;
+  else if (a === "t-en") editModel.dialogues[di].turns[+t.dataset.ti].en = t.value;
+  else if (a === "t-zh") editModel.dialogues[di].turns[+t.dataset.ti].zh = t.value;
+  else if (a === "t-role") editModel.dialogues[di].turns[+t.dataset.ti].role = +t.value;
+});
+$("dlgEditor").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  const a = b.dataset.act, di = +b.dataset.di, ti = +b.dataset.ti;
+  if (a === "play-t") { speak(editModel.dialogues[di].turns[ti].en, 1); return; }
+  if (a === "del-dlg") editModel.dialogues.splice(di, 1);
+  else if (a === "add-turn") editModel.dialogues[di].turns.push({ role: 0, en: "", zh: "" });
+  else if (a === "del-turn") editModel.dialogues[di].turns.splice(ti, 1);
+  else if (a === "up-t") swap(editModel.dialogues[di].turns, ti, ti - 1);
+  else if (a === "down-t") swap(editModel.dialogues[di].turns, ti, ti + 1);
+  else return;
+  renderDlgEditor();
+});
+$("addSceneBtn").onclick = () => { editModel.data.push({ name: "新场景", items: [{ en: "", zh: "" }] }); renderDataEditor(); };
+$("addDlgBtn").onclick = () => { editModel.dialogues.push({ name: "新对话", roles: ["角色A", "角色B"], turns: [{ role: 0, en: "", zh: "" }] }); renderDlgEditor(); };
+
+/* 拖拽排序（同一场景内排句子 / 同一对话内排台词） */
+function moveInArray(arr, from, to) {
+  if (from === to || from < 0 || to < 0) return;
+  const [x] = arr.splice(from, 1);
+  arr.splice(from < to ? to - 1 : to, 0, x);
+}
+function setupDrag(boxId, getList, srcKey, idxKey, rerender) {
+  const box = $(boxId);
+  let drag = null;
+  box.addEventListener("dragstart", (e) => {
+    const h = e.target.closest(".drag-handle"); if (!h) return;
+    drag = { group: +h.dataset[srcKey], idx: +h.dataset[idxKey] };
+    e.dataTransfer.effectAllowed = "move";
+    try { e.dataTransfer.setData("text/plain", ""); } catch (_) {}
+  });
+  box.addEventListener("dragover", (e) => {
+    if (!drag) return;
+    e.preventDefault();
+    const row = e.target.closest(".edit-row");
+    box.querySelectorAll(".edit-row.dragover").forEach(r => r.classList.remove("dragover"));
+    if (row && +row.dataset[srcKey] === drag.group) row.classList.add("dragover");
+  });
+  box.addEventListener("dragleave", (e) => {
+    const row = e.target.closest(".edit-row"); if (row) row.classList.remove("dragover");
+  });
+  box.addEventListener("drop", (e) => {
+    if (!drag) return;
+    e.preventDefault();
+    const row = e.target.closest(".edit-row");
+    if (row && +row.dataset[srcKey] === drag.group) {
+      moveInArray(getList(drag.group), drag.idx, +row.dataset[idxKey]);
+      rerender();
+    }
+    drag = null;
+  });
+  box.addEventListener("dragend", () => {
+    drag = null;
+    box.querySelectorAll(".edit-row.dragover").forEach(r => r.classList.remove("dragover"));
+  });
+}
+setupDrag("dataEditor", (si) => editModel.data[si].items, "si", "qi", renderDataEditor);
+setupDrag("dlgEditor", (di) => editModel.dialogues[di].turns, "di", "ti", renderDlgEditor);
+
+/* 导出带 IPA 的可打印 / PDF 练习清单 */
+function buildPrintHTML() {
+  const { dataObj, dlgObj } = modelToObjects();
+  let h = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8" />
+  <title>英语口语练习清单</title><style>
+    body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:#111;line-height:1.5;padding:24px;max-width:820px;margin:0 auto;}
+    h1{font-size:22px;margin:0 0 4px;} .sub{color:#666;font-size:13px;margin-bottom:18px;}
+    h2{font-size:17px;margin:26px 0 8px;border-bottom:2px solid #333;padding-bottom:4px;}
+    h3{font-size:15px;margin:16px 0 6px;color:#222;}
+    .item{margin:9px 0;page-break-inside:avoid;}
+    .en{font-size:16px;font-weight:600;} .ipa{color:#0369a1;font-size:13px;} .zh{color:#555;font-size:14px;}
+    .role{font-weight:700;margin-right:6px;color:#0e7490;}
+    @media print{.noprint{display:none;}}
+    .noprint{margin:16px 0;} .noprint button{font-size:14px;padding:8px 16px;border-radius:8px;border:1px solid #0284c7;background:#0284c7;color:#fff;cursor:pointer;}
+  </style></head><body>
+  <div class="noprint"><button onclick="window.print()">🖨️ 打印 / 另存为 PDF</button></div>
+  <h1>🗣️ 英语口语练习清单</h1>
+  <div class="sub">含国际音标（IPA）· 共 ${Object.keys(dataObj).length} 个场景、${Object.keys(dlgObj).length} 段对话</div>
+  <h2>📚 练习场景</h2>`;
+  Object.entries(dataObj).forEach(([name, items]) => {
+    h += `<h3>${esc(name)}</h3>`;
+    items.forEach(it => { h += `<div class="item"><div class="en">${esc(it.en)}</div><div class="ipa">${ipaFor(it.en)}</div><div class="zh">${esc(it.zh)}</div></div>`; });
+  });
+  h += `<h2>💬 对话</h2>`;
+  Object.entries(dlgObj).forEach(([name, d]) => {
+    h += `<h3>${esc(name)}（${esc(d.roles[0])} / ${esc(d.roles[1])}）</h3>`;
+    d.turns.forEach(t => { h += `<div class="item"><div class="en"><span class="role">${esc(d.roles[t.role])}:</span>${esc(t.en)}</div><div class="ipa">${ipaFor(t.en)}</div><div class="zh">${esc(t.zh)}</div></div>`; });
+  });
+  return h + `</body></html>`;
+}
+$("printBtn").onclick = () => {
+  const w = window.open("", "_blank");
+  if (!w) { setEditStatus("无法打开打印窗口，请允许浏览器弹窗后重试。", "err"); return; }
+  w.document.write(buildPrintHTML());
+  w.document.close();
+  setEditStatus("已生成练习清单，在新窗口里选「打印」即可保存为 PDF。", "ok");
+};
+
+function uniqueNonEmpty(names, label) {
+  if (names.some(n => !n)) throw new Error(`有${label}名为空`);
+  if (new Set(names).size !== names.length) throw new Error(`${label}名有重复`);
+}
+$("saveEditBtn").onclick = () => {
+  const { dataObj, dlgObj } = modelToObjects();
+  try {
+    uniqueNonEmpty(editModel.data.map(s => (s.name || "").trim()), "场景");
+    uniqueNonEmpty(editModel.dialogues.map(d => (d.name || "").trim()), "对话");
+    validateData(dataObj);
+    validateDialogues(dlgObj);
+  } catch (e) { return setEditStatus("无法保存：" + e.message, "err"); }
+  applyCorpus(dataObj, dlgObj, true);
+  setEditStatus("✅ 已保存并应用，所有模式已更新。", "ok");
+};
+$("resetEditBtn").onclick = () => {
+  if (!confirm("恢复为内置默认语料？你的自定义内容会被清除。")) return;
+  localStorage.removeItem("esc_custom_data");
+  localStorage.removeItem("esc_custom_dialogues");
+  applyCorpus(DEFAULT_DATA, DEFAULT_DIALOGUES, false);
+  loadEditor();
+  setEditStatus("已恢复为默认语料。", "ok");
+};
+$("exportBtn").onclick = () => {
+  const { dataObj, dlgObj } = modelToObjects();
+  const blob = new Blob([JSON.stringify({ data: dataObj, dialogues: dlgObj }, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "english-coach-corpus.json"; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  setEditStatus("已导出当前编辑内容为 JSON 文件。", "ok");
+};
+$("importBtn").onclick = () => $("importFile").click();
+$("importFile").onchange = (e) => {
+  const file = e.target.files[0]; e.target.value = ""; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    let obj;
+    try { obj = JSON.parse(reader.result); } catch { return setEditStatus("导入失败：JSON 解析错误。", "err"); }
+    const d = obj && (obj.data || obj.DATA), g = obj && (obj.dialogues || obj.DIALOGUES);
+    try { validateData(d); validateDialogues(g); }
+    catch (err) { return setEditStatus("导入失败：" + err.message, "err"); }
+    objectsToModel(d, g);
+    renderDataEditor(); renderDlgEditor();
+    setEditStatus("✅ 已导入，请检查后点「保存并应用」。", "ok");
+  };
+  reader.readAsText(file);
+};
+
+/* ================= 主题切换 ================= */
+function applyTheme(theme) {
+  const light = theme === "light";
+  document.body.classList.toggle("light", light);
+  $("themeBtn").textContent = light ? "☀️" : "🌙";
+  $("themeBtn").title = light ? "切换到深色主题" : "切换到浅色主题";
+}
+$("themeBtn").onclick = () => {
+  const next = document.body.classList.contains("light") ? "dark" : "light";
+  LS.set("esc_theme", next);
+  applyTheme(next);
+};
+
+/* ================= 初始化 ================= */
+applyTheme(LS.get("esc_theme", "dark"));
+if (!srSupported) $("browserWarn").style.display = "block";
+renderStats();
+renderScenes();
+renderCard();
+renderDialogScenes();
+</script>
+</body>
+</html>
