@@ -608,6 +608,7 @@ const MISTAKE_THRESHOLD = 70;
 
 /* 语音列表在移动端是异步加载的，先缓存并在变化时刷新 */
 let cachedVoices = [];
+let ttsVerified = false; // 一旦真正发出过声音就置 true
 function refreshVoices() { if (synth) cachedVoices = synth.getVoices() || []; }
 if (synth) {
   refreshVoices();
@@ -626,10 +627,18 @@ function speak(text, rate, cb) {
   const u = new SpeechSynthesisUtterance(text);
   u.lang = "en-US"; u.rate = rate;
   if (cb) u.onend = cb;
+  // 真正开始播放即证明浏览器支持发音 → 隐藏提示
+  u.onstart = () => { ttsVerified = true; setTtsWarn(false); };
   const go = () => {
     const v = pickEnVoice(); if (v) u.voice = v;
     synth.speak(u);
     if (synth.paused) { try { synth.resume(); } catch (e) {} }
+    // 若一段时间后既没开始、也不在队列里，判定为不支持发音才提示（开始播放会自动撤销）
+    if (!ttsVerified) {
+      setTimeout(() => {
+        if (!ttsVerified && !synth.speaking && !synth.pending) setTtsWarn(true);
+      }, 1600);
+    }
   };
   // 安卓首次点击时 voices 可能尚未就绪，等待一次再播（并设超时兜底）
   if (!cachedVoices.length && (!synth.getVoices || synth.getVoices().length === 0)) {
@@ -1279,15 +1288,12 @@ $("themeBtn").onclick = () => {
 applyTheme(LS.get("esc_theme", "dark"));
 if (!srSupported) $("browserWarn").style.display = "block";
 
-/* 朗读（TTS）能力检测：不支持时给出友好提示 */
+/* 朗读（TTS）能力检测：仅在浏览器完全没有语音合成 API 时先提示；
+   其余情况不靠 getVoices()（安卓上常为空却能发声），而是点朗读后由
+   onstart / 超时来判定，避免对 UC、Chrome 等可用浏览器误报。 */
 function setTtsWarn(show) { $("ttsWarn").style.display = show ? "block" : "none"; }
-if (!synth) {
-  setTtsWarn(true); // 浏览器完全没有语音合成 API
-} else {
-  // 部分内置/国产浏览器有 API 却没有语音引擎：等语音列表，到时仍为空才提示
-  const onVoices = () => { refreshVoices(); if (cachedVoices.length) setTtsWarn(false); };
-  try { synth.addEventListener("voiceschanged", onVoices); } catch (e) {}
-  setTimeout(() => { refreshVoices(); if (!cachedVoices.length) setTtsWarn(true); }, 2000);
+if (!synth || typeof window.SpeechSynthesisUtterance === "undefined") {
+  setTtsWarn(true);
 }
 
 renderStats();
