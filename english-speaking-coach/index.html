@@ -516,7 +516,8 @@ const LS = {
   get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
   set(k, v) { localStorage.setItem(k, JSON.stringify(v)); },
 };
-const todayStr = () => new Date().toISOString().slice(0, 10);
+const dateStr = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const todayStr = () => dateStr(new Date());
 
 /* 语料：优先使用用户自定义内容，否则用内置默认 */
 function validateData(obj) {
@@ -562,7 +563,7 @@ function logAttempt(score) {
   const s = loadStreak();
   const today = todayStr();
   if (s.lastDate !== today) {
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const yesterday = dateStr(new Date(Date.now() - 86400000));
     s.count = s.lastDate === yesterday ? (s.count + 1) : 1;
     s.lastDate = today;
     s.todayCount = 0;
@@ -601,6 +602,7 @@ function renderStats() {
 
 /* ================= 通用 ================= */
 const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const synth = window.speechSynthesis;
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 const srSupported = !!SR;
@@ -722,7 +724,7 @@ function renderPracticeResult(target, heard, err) {
   if (err) { $("result").innerHTML = `<div class="tip">⚠️ 录音出错：${err}。请检查麦克风权限。</div>`; return; }
   const { score, marks } = scoreSpeech(target, heard);
   $("result").innerHTML = `
-    <div class="heard"><span class="label">识别到你说的：</span>${heard || "（没听清）"}</div>
+    <div class="heard"><span class="label">识别到你说的：</span>${esc(heard) || "（没听清）"}</div>
     <div class="score-row">
       <div class="score-num" style="color:${colorFor(score)}">${score}</div>
       <div class="score-bar"><div class="score-fill" style="background:${colorFor(score)}"></div></div>
@@ -788,8 +790,8 @@ function renderTurns() {
     row.innerHTML = `
       <div class="avatar">${mine ? "🧑" : "🤖"}</div>
       <div class="bubble">
-        <p class="en">${revealed ? t.en : (mine ? "🎤 轮到你说这句…" : "…")}</p>
-        ${revealed ? `<p class="zh">${t.zh}</p><p class="mini">${ipaFor(t.en)}</p>` : (mine ? `<p class="zh">${t.zh}</p>` : "")}
+        <p class="en">${revealed ? esc(t.en) : (mine ? "🎤 轮到你说这句…" : "…")}</p>
+        ${revealed ? `<p class="zh">${esc(t.zh)}</p><p class="mini">${ipaFor(t.en)}</p>` : (mine ? `<p class="zh">${esc(t.zh)}</p>` : "")}
       </div>`;
     box.appendChild(row);
   });
@@ -841,7 +843,7 @@ function playWholeDialogue() {
 function showSubtitle(t) {
   const el = $("dlgSubtitle");
   el.classList.remove("hidden");
-  el.innerHTML = `<div class="s-en">${t.en}</div><div class="s-zh">${t.zh}</div>`;
+  el.innerHTML = `<div class="s-en">${esc(t.en)}</div><div class="s-zh">${esc(t.zh)}</div>`;
 }
 function stopPlayAll(finished) {
   playingAll = false; speakingIdx = -1;
@@ -860,7 +862,7 @@ function renderDlgResult(target, heard, err) {
   if (err) { $("dlgResult").innerHTML = `<div class="tip">⚠️ 录音出错：${err}。</div>`; return; }
   const { score, marks } = scoreSpeech(target, heard);
   $("dlgResult").innerHTML = `
-    <div class="heard"><span class="label">你说的：</span>${heard || "（没听清）"}</div>
+    <div class="heard"><span class="label">你说的：</span>${esc(heard) || "（没听清）"}</div>
     <div class="score-row">
       <div class="score-num" style="color:${colorFor(score)}">${score}</div>
       <div class="score-bar"><div class="score-fill" style="background:${colorFor(score)}; width:${score}%"></div></div>
@@ -887,10 +889,10 @@ function renderMistakes() {
     el.className = "mistake";
     el.innerHTML = `
       <div class="top">
-        <p class="en">${m.en}</p>
+        <p class="en">${esc(m.en)}</p>
         <span class="badge" style="background:${colorFor(m.score)}">${m.score}</span>
       </div>
-      <p class="zh">${m.zh}</p>
+      <p class="zh">${esc(m.zh)}</p>
       <p class="mini" style="color:var(--accent);font-size:13px;margin:4px 0 0">${ipaFor(m.en)}</p>
       <div class="row-actions">
         <button class="mini-btn play">🔊 朗读</button>
@@ -906,7 +908,7 @@ function renderMistakes() {
       const resBox = el.querySelector(".result");
       if (e) { resBox.innerHTML = `<div class="tip">⚠️ ${e}</div>`; return; }
       const { score, marks } = scoreSpeech(m.en, h);
-      resBox.innerHTML = `<div class="heard" style="margin-top:10px"><span class="label">你说的：</span>${h || "（没听清）"}</div>
+      resBox.innerHTML = `<div class="heard" style="margin-top:10px"><span class="label">你说的：</span>${esc(h) || "（没听清）"}</div>
         <div class="diff" style="margin-top:10px">${diffHtml(marks)}</div>
         <div class="mini" style="color:var(--accent);font-size:13px;margin-top:6px">${ipaFor(m.en)}</div>
         <div class="tip"><b style="color:${colorFor(score)}">${score} 分</b> · ${feedbackFor(score)}</div>`;
@@ -923,7 +925,7 @@ function renderChart() {
   const h = loadHistory();
   const days = [];
   for (let i = 13; i >= 0; i--) {
-    const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    const d = dateStr(new Date(Date.now() - i * 86400000));
     const rec = h[d] || { count: 0, sum: 0 };
     days.push({ date: d, count: rec.count, avg: rec.count ? Math.round(rec.sum / rec.count) : null });
   }
@@ -1027,8 +1029,6 @@ function applyCorpus(newData, newDialogues, persist) {
   myRole = 0;
   renderScenes(); renderCard(); renderDialogScenes();
 }
-
-const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 /* 表单工作副本（数组形式，便于增删改名） */
 let editModel = { data: [], dialogues: [] };
