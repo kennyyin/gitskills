@@ -187,6 +187,15 @@
   .footer code { color: var(--accent); }
   .warn { background: #422006; color: #fbbf24; border: 1px solid #854d0e;
     padding: 10px 14px; border-radius: 12px; font-size: 13px; margin: 12px 0; display: none; }
+  /* 动画内嵌 */
+  .video-form { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .video-form .f-input { flex: 1 1 220px; }
+  .video-form .video-page { flex: 0 0 110px; }
+  .video-wrap { position: relative; width: 100%; aspect-ratio: 16 / 9; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .video-wrap .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 20px; }
+
   .hidden { display: none !important; }
 
   /* 窄屏 / 手机适配 */
@@ -235,6 +244,7 @@
       <button class="mode-btn" data-mode="review">📒 错题本</button>
       <button class="mode-btn" data-mode="progress">📊 进度</button>
       <button class="mode-btn" data-mode="editor">✏️ 编辑</button>
+      <button class="mode-btn" data-mode="video">📺 动画</button>
     </div>
 
     <div id="ttsWarn" class="warn">
@@ -326,6 +336,21 @@
         </div>
         <div class="editor-status" id="editStatus"></div>
         <p class="hint" style="margin-top:12px">💡 自定义内容保存在本机浏览器；导出可备份/分享，导入后需点「保存并应用」。词典外的单词音标处显示「·」。</p>
+      </div>
+    </section>
+
+    <!-- ===== 动画（B 站官方播放器内嵌） ===== -->
+    <section id="videoView" class="hidden">
+      <div class="card">
+        <div class="video-form">
+          <input class="f-input" id="videoUrl" placeholder="粘贴 B 站链接或 BV 号，如 BV1inV867E2x" />
+          <input class="f-input video-page" id="videoPage" type="number" min="1" placeholder="第几集 (p)" />
+          <button class="btn btn-play" id="videoLoadBtn">▶️ 播放</button>
+        </div>
+        <div class="video-wrap" id="videoWrap">
+          <div class="empty" id="videoEmpty">📺 粘贴一个 B 站视频链接或 BV 号，点「播放」即可在此观看／跟读。<br/>视频由 B 站官方播放器流式播放，本工具不存储任何内容。</div>
+        </div>
+        <p class="hint" style="margin-top:12px">💡 用法：选一集英文动画，听一句→暂停→切到「📚 练习」或「💬 对话」开口跟读。海外网络下 B 站内嵌播放器可能受地区限制；国内用 UC / Chrome 一般正常。</p>
       </div>
     </section>
 
@@ -982,14 +1007,76 @@ function setMode(mode) {
   $("reviewView").classList.toggle("hidden", mode !== "review");
   $("progressView").classList.toggle("hidden", mode !== "progress");
   $("editorView").classList.toggle("hidden", mode !== "editor");
+  $("videoView").classList.toggle("hidden", mode !== "video");
   if (playingAll) stopPlayAll(false);
   if (synth) synth.cancel();
   if (recognizing && recognition) recognition.stop();
+  if (mode !== "video") stopVideo(); // 离开动画页时停止视频声音
   if (mode === "dialogue") { $("dlgRecBtn").disabled = false; $("dlgPlayBtn").disabled = false; restartDialogue(); }
   if (mode === "review") renderMistakes();
   if (mode === "progress") renderChart();
   if (mode === "editor") loadEditor();
+  if (mode === "video") loadVideo();
 }
+
+/* ================= 动画（B 站官方播放器内嵌） ================= */
+/* 解析输入：支持完整链接、BV 号、av 号；分集 p 取自链接或单独输入框 */
+function parseBili(input, pageField) {
+  const s = (input || "").trim();
+  if (!s) return null;
+  const bv = s.match(/BV[0-9A-Za-z]{8,12}/);
+  const av = s.match(/av(\d+)/i) || s.match(/[?&]aid=(\d+)/);
+  let p = "";
+  const pm = s.match(/[?&]p=(\d+)/);
+  if (pm) p = pm[1];
+  if (pageField && /^\d+$/.test(pageField.trim())) p = pageField.trim(); // 单独输入框优先
+  if (!p) p = "1";
+  if (bv) return { kind: "bvid", id: bv[0], p };
+  if (av) return { kind: "aid", id: av[1], p };
+  return null;
+}
+function buildBiliSrc(info) {
+  // 用严格白名单字段构造，避免注入
+  const id = encodeURIComponent(info.id);
+  const p = encodeURIComponent(info.p);
+  return `https://player.bilibili.com/player.html?${info.kind}=${id}&p=${p}&autoplay=0&high_quality=1&danmaku=0`;
+}
+function renderVideo(info) {
+  const wrap = $("videoWrap");
+  if (!info) {
+    wrap.innerHTML = `<div class="empty" id="videoEmpty">⚠️ 没认出 B 站视频，请粘贴完整链接或 BV 号（如 BV1inV867E2x）。</div>`;
+    return;
+  }
+  const iframe = document.createElement("iframe");
+  iframe.src = buildBiliSrc(info);
+  iframe.allow = "fullscreen";
+  iframe.setAttribute("allowfullscreen", "true");
+  iframe.setAttribute("scrolling", "no");
+  iframe.referrerPolicy = "no-referrer";
+  wrap.innerHTML = "";
+  wrap.appendChild(iframe);
+}
+function stopVideo() {
+  const wrap = $("videoWrap");
+  const f = wrap && wrap.querySelector("iframe");
+  if (f) f.src = "about:blank"; // 卸载播放器以停止声音
+}
+function loadVideo() {
+  // 恢复上次输入；若有，自动重建播放器
+  const saved = LS.get("esc_video", null);
+  if (saved && saved.input) {
+    $("videoUrl").value = saved.input;
+    $("videoPage").value = saved.page || "";
+    const info = parseBili(saved.input, saved.page);
+    if (info) renderVideo(info);
+  }
+}
+$("videoLoadBtn").onclick = () => {
+  const input = $("videoUrl").value, page = $("videoPage").value;
+  const info = parseBili(input, page);
+  renderVideo(info);
+  if (info) LS.set("esc_video", { input: input.trim(), page: (page || "").trim() });
+};
 document.querySelectorAll(".mode-btn").forEach(b => b.onclick = () => setMode(b.dataset.mode));
 
 document.addEventListener("keydown", (e) => {
